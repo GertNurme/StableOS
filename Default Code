@@ -4257,10 +4257,18 @@ const App = () => {
   }
 
   if (demoRole === 'Parent' && demoProfile) {
+      // Dynamic Navigation for Parents based on Settings
+      const parentNav = [
+          { id: 'home', label: 'Family Portal', icon: Users },
+          ...(settings.studentViewBarnSchedule ? [{ id: 'schedule', label: 'Barn Schedule', icon: Calendar }] : []),
+          ...(settings.studentViewHorseProfiles ? [{ id: 'horses', label: 'Horses', icon: Shield }] : []),
+          { id: 'messages', label: 'Messages', icon: MessageSquare }
+      ];
+
       return (
         <AppLayout 
             title={settings.stableName} 
-            navItems={[{ id: 'home', label: 'Family Portal', icon: Users }, { id: 'messages', label: 'Messages', icon: MessageSquare }]} 
+            navItems={parentNav} 
             activeTab={activeTab === 'dashboard' ? 'home' : activeTab} 
             onTabChange={setActiveTab}
             darkMode={darkMode}
@@ -4269,6 +4277,10 @@ const App = () => {
         >
              {activeTab === 'messages' ? (
                  <MessageCenterModule currentUser={{name: demoProfile.name, role: 'Parent'}} messages={messages} allUsers={[...students, ...parents, ...staff]} onSendMessage={d => handleAdd('messages', d)} onDeleteMessage={id => handleDelete('messages', id)} />
+             ) : activeTab === 'schedule' ? (
+                 <ScheduleModule lessons={lessons} horses={horses} students={students} staff={staff} settings={settings} readOnly={true} onAddLesson={() => {}} onUpdateLesson={() => {}} onDeleteLesson={() => {}} />
+             ) : activeTab === 'horses' ? (
+                 <HorsesModule horses={horses} readOnly={true} />
              ) : (
                  <ParentView parent={demoProfile} students={students} lessons={lessons} settings={settings} announcements={announcements} onBookLesson={d => handleAdd('lessons', {...d, status: 'Pending'})} />
              )}

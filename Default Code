@@ -834,7 +834,7 @@ const ParentView = ({ parent, students, lessons, settings, onBookLesson, announc
             {/* Upcoming Schedule (Mirrored) */}
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{activeChild.name.split(' ')[0]}'s Schedule</h3>
-                {settings.parentFamilyBooking && (
+                {settings.studentSelfBooking && (
                     <Button onClick={() => handleBookingRequest(activeChild.name)} icon={Plus} size="sm">Booking Request</Button>
                 )}
             </div>
@@ -3588,8 +3588,7 @@ const SettingsModule = ({ settings, onUpdateSettings }) => {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Role Permissions</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-3"><h4 className="font-bold text-gray-900 dark:text-white">Students & Parents</h4>
-                        <SettingsSwitch label="Self-Service Booking" desc="Book lessons via app" checked={formData.studentSelfBooking} onChange={v=>setFormData({...formData, studentSelfBooking:v})} />
-                        <SettingsSwitch label="Family Booking" desc="Book for self/children" checked={formData.parentFamilyBooking} onChange={v=>setFormData({...formData, parentFamilyBooking:v})} />
+                        <SettingsSwitch label="Client Booking" desc="Allow students & parents to book lessons" checked={formData.studentSelfBooking} onChange={v=>setFormData({...formData, studentSelfBooking:v})} />
                         <SettingsSwitch label="View Schedule" desc="See full barn schedule" checked={formData.studentViewBarnSchedule} onChange={v=>setFormData({...formData, studentViewBarnSchedule:v})} />
                         <SettingsSwitch label="View Horses" desc="See horse profiles" checked={formData.studentViewHorseProfiles} onChange={v=>setFormData({...formData, studentViewHorseProfiles:v})} />
                     </div>
@@ -3600,6 +3599,8 @@ const SettingsModule = ({ settings, onUpdateSettings }) => {
                         <SettingsSwitch label="Schedule" desc="Manage lessons" checked={formData.staffScheduleManagement} onChange={v=>setFormData({...formData, staffScheduleManagement:v})} />
                         <SettingsSwitch label="Inventory" desc="Update stock" checked={formData.staffInventoryControl} onChange={v=>setFormData({...formData, staffInventoryControl:v})} />
                         <SettingsSwitch label="Tasks" desc="Manage tasks" checked={formData.staffViewTasks} onChange={v=>setFormData({...formData, staffViewTasks:v})} />
+                        <SettingsSwitch label="Manage Staff" desc="Add/Edit staff members" checked={formData.staffViewStaff} onChange={v=>setFormData({...formData, staffViewStaff:v})} />
+                        <SettingsSwitch label="Announcements" desc="Post news" checked={formData.staffManageAnnouncements} onChange={v=>setFormData({...formData, staffManageAnnouncements:v})} />
                     </div>
                 </div>
             </div>
@@ -3859,7 +3860,6 @@ const App = () => {
     calendarStartDay: 'Monday',
     dateFormat: 'DD/MM/YYYY',
     studentSelfBooking: true,
-    parentFamilyBooking: true,
     studentViewBarnSchedule: false,
     studentViewHorseProfiles: true,
     staffEditMedicalFeed: true,
@@ -3867,7 +3867,9 @@ const App = () => {
     staffViewParents: true,
     staffScheduleManagement: true,
     staffInventoryControl: true,
-    staffViewTasks: true
+    staffViewTasks: true,
+    staffViewStaff: false,
+    staffManageAnnouncements: false
   });
 
   // --- Auth & Data Sync ---
@@ -4217,23 +4219,36 @@ const App = () => {
   const handleSwitchRole = (role, profile) => {
       setDemoRole(role);
       setDemoProfile(profile);
+      setActiveTab(role === 'Administrator' ? 'dashboard' : 'home');
   };
 
   if (authLoading) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-400">Loading StableOS...</div>;
 
   if (demoRole === 'Student' && demoProfile) {
+      // Dynamic Navigation for Students based on Settings
+      const studentNav = [
+          { id: 'home', label: 'My Stable', icon: Horse },
+          ...(settings.studentViewBarnSchedule ? [{ id: 'schedule', label: 'Barn Schedule', icon: Calendar }] : []),
+          ...(settings.studentViewHorseProfiles ? [{ id: 'horses', label: 'Horses', icon: Shield }] : []),
+          { id: 'messages', label: 'Messages', icon: MessageSquare }
+      ];
+
       return (
         <AppLayout 
             title={settings.stableName} 
-            navItems={[{ id: 'home', label: 'My Stable', icon: Horse }, { id: 'messages', label: 'Messages', icon: MessageSquare }]} 
-            activeTab="home" 
-            onTabChange={() => {}}
+            navItems={studentNav} 
+            activeTab={activeTab === 'dashboard' ? 'home' : activeTab} 
+            onTabChange={setActiveTab}
             darkMode={darkMode}
             toggleTheme={toggleTheme}
             bottomContent={<SidebarFooter role={demoRole} currentUserProfile={demoProfile} students={students} parents={parents} staff={staff} onSwitchRole={handleSwitchRole} onLogout={() => signOut(auth)} />}
         >
             {activeTab === 'messages' ? (
                 <MessageCenterModule currentUser={{name: demoProfile.name, role: 'Student'}} messages={messages} allUsers={staff} onSendMessage={d => handleAdd('messages', d)} onDeleteMessage={id => handleDelete('messages', id)} />
+            ) : activeTab === 'schedule' ? (
+                <ScheduleModule lessons={lessons} horses={horses} students={students} staff={staff} settings={settings} readOnly={true} onAddLesson={() => {}} onUpdateLesson={() => {}} onDeleteLesson={() => {}} />
+            ) : activeTab === 'horses' ? (
+                <HorsesModule horses={horses} readOnly={true} />
             ) : (
                 <StudentView student={demoProfile} lessons={lessons} horses={horses} settings={settings} announcements={announcements} onBookLesson={d => handleAdd('lessons', {...d, status: 'Pending'})} />
             )}
@@ -4246,22 +4261,40 @@ const App = () => {
         <AppLayout 
             title={settings.stableName} 
             navItems={[{ id: 'home', label: 'Family Portal', icon: Users }, { id: 'messages', label: 'Messages', icon: MessageSquare }]} 
-            activeTab="home" 
-            onTabChange={() => {}}
+            activeTab={activeTab === 'dashboard' ? 'home' : activeTab} 
+            onTabChange={setActiveTab}
             darkMode={darkMode}
             toggleTheme={toggleTheme}
             bottomContent={<SidebarFooter role={demoRole} currentUserProfile={demoProfile} students={students} parents={parents} staff={staff} onSwitchRole={handleSwitchRole} onLogout={() => signOut(auth)} />}
         >
-             <ParentView parent={demoProfile} students={students} lessons={lessons} settings={settings} announcements={announcements} onBookLesson={d => handleAdd('lessons', {...d, status: 'Pending'})} />
+             {activeTab === 'messages' ? (
+                 <MessageCenterModule currentUser={{name: demoProfile.name, role: 'Parent'}} messages={messages} allUsers={[...students, ...parents, ...staff]} onSendMessage={d => handleAdd('messages', d)} onDeleteMessage={id => handleDelete('messages', id)} />
+             ) : (
+                 <ParentView parent={demoProfile} students={students} lessons={lessons} settings={settings} announcements={announcements} onBookLesson={d => handleAdd('lessons', {...d, status: 'Pending'})} />
+             )}
         </AppLayout>
       );
   }
 
   if (demoRole === 'Staff' && demoProfile) {
+      // Dynamic Navigation for Staff based on Settings
+      const staffNav = [
+          { id: 'home', label: 'Staff Dashboard', icon: LayoutDashboard },
+          ...(settings.staffScheduleManagement ? [{ id: 'schedule', label: 'Schedule', icon: Calendar }] : []),
+          { id: 'horses', label: 'Horses', icon: Horse },
+          ...(settings.staffViewStudents ? [{ id: 'students', label: 'Students', icon: GraduationCap }] : []),
+          ...(settings.staffViewParents ? [{ id: 'parents', label: 'Parents', icon: Users }] : []),
+          ...(settings.staffViewStaff ? [{ id: 'staff', label: 'Staff', icon: UserCog }] : []),
+          ...(settings.staffViewTasks ? [{ id: 'tasks', label: 'Tasks', icon: ClipboardList }] : []),
+          ...(settings.staffInventoryControl ? [{ id: 'inventory', label: 'Inventory', icon: Package }] : []),
+          ...(settings.staffManageAnnouncements ? [{ id: 'announcements', label: 'News', icon: Megaphone }] : []),
+          { id: 'messages', label: 'Messages', icon: MessageSquare }
+      ];
+
       return (
         <AppLayout 
             title={settings.stableName} 
-            navItems={[{ id: 'home', label: 'Staff Dashboard', icon: LayoutDashboard }, { id: 'schedule', label: 'Schedule', icon: Calendar }, { id: 'horses', label: 'Horses', icon: Horse }, { id: 'messages', label: 'Messages', icon: MessageSquare }]} 
+            navItems={staffNav} 
             activeTab={activeTab === 'dashboard' ? 'home' : activeTab} 
             onTabChange={setActiveTab}
             darkMode={darkMode}
@@ -4272,6 +4305,18 @@ const App = () => {
                  <HorsesModule horses={horses} readOnly={!settings.staffEditMedicalFeed} onUpdateHorse={(id, d) => handleUpdate('horses', id, d)} />
              ) : activeTab === 'schedule' ? (
                  <ScheduleModule lessons={lessons} horses={horses} students={students} staff={staff} settings={settings} onAddLesson={d => handleAdd('lessons', d)} onUpdateLesson={(id, d) => handleUpdate('lessons', id, d)} onDeleteLesson={id => handleDelete('lessons', id)} />
+             ) : activeTab === 'students' ? (
+                 <StudentsModule students={students} parents={parents} lessons={lessons} onAddStudent={d => handleAdd('students', d)} onUpdateStudent={(id, d) => handleUpdate('students', id, d)} onDeleteStudent={id => handleDelete('students', id)} />
+             ) : activeTab === 'parents' ? (
+                 <ParentsModule parents={parents} students={students} onAddParent={d => handleAdd('parents', d)} onUpdateParent={(id, d) => handleUpdate('parents', id, d)} onDeleteParent={id => handleDelete('parents', id)} />
+             ) : activeTab === 'staff' ? (
+                 <StaffListModule staff={staff} onAddStaff={d => handleAdd('staff', d)} onUpdateStaff={(id, d) => handleUpdate('staff', id, d)} onDeleteStaff={id => handleDelete('staff', id)} />
+             ) : activeTab === 'tasks' ? (
+                 <TasksModule tasks={tasks} staff={staff} onAddTask={d => handleAdd('tasks', d)} onUpdateTask={(id, d) => handleUpdate('tasks', id, d)} onDeleteTask={id => handleDelete('tasks', id)} />
+             ) : activeTab === 'inventory' ? (
+                 <InventoryModule inventory={inventory} onAddItem={d => handleAdd('inventory', d)} onUpdateItem={(id, d) => handleUpdate('inventory', id, d)} onDeleteItem={id => handleDelete('inventory', id)} />
+             ) : activeTab === 'announcements' ? (
+                 <AnnouncementsModule announcements={announcements} onAdd={d => handleAdd('announcements', d)} onDelete={id => handleDelete('announcements', id)} currentUser={{name: demoProfile.name, role: 'Staff'}} />
              ) : activeTab === 'messages' ? (
                  <MessageCenterModule currentUser={{name: demoProfile.name, role: 'Staff'}} messages={messages} allUsers={[...students, ...parents, ...staff]} onSendMessage={d => handleAdd('messages', d)} onDeleteMessage={id => handleDelete('messages', id)} />
              ) : (
@@ -4315,4 +4360,3 @@ const App = () => {
 };
 
 export default App;
-

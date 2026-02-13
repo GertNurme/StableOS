@@ -598,7 +598,6 @@ const StudentView = ({ student, lessons, horses, settings, onBookLesson, announc
 
       <div className="flex justify-between items-center pt-4">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your Upcoming Schedule</h3>
-        {settings.studentSelfBooking && student.type === 'Adult' && <Button onClick={() => setIsBookingOpen(true)} icon={Plus}>Booking Request</Button>}
       </div>
       
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
@@ -839,9 +838,6 @@ const ParentView = ({ parent, students, lessons, settings, onBookLesson, announc
             {/* Upcoming Schedule (Mirrored) */}
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{activeChild.name.split(' ')[0]}'s Schedule</h3>
-                {settings.studentSelfBooking && (
-                    <Button onClick={() => handleBookingRequest(activeChild.name)} icon={Plus} size="sm">Booking Request</Button>
-                )}
             </div>
             <Card className="overflow-hidden mb-8">
                 <div className="divide-y divide-gray-100 dark:divide-slate-700">

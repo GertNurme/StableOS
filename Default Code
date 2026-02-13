@@ -602,22 +602,58 @@ const StudentView = ({ student, lessons, horses, settings, onBookLesson, announc
       
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
         {upcomingLessons.map(lesson => (
-          <div key={lesson.id} className={`p-4 border-b border-gray-100 dark:border-slate-700 last:border-0 flex items-center justify-between ${lesson.status === 'Cancelled' ? 'bg-gray-50 dark:bg-slate-700' : ''}`}>
-            <div className={lesson.status === 'Cancelled' ? 'opacity-60' : ''}>
-              <p className={`font-semibold text-gray-900 dark:text-white ${lesson.status === 'Cancelled' ? 'line-through decoration-gray-400' : ''}`}>{lesson.title}</p>
-              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  <span className={lesson.status === 'Cancelled' ? 'line-through' : ''}>
-                      {safeDate(lesson.date).toLocaleDateString('en-GB')} {lesson.time || safeDate(lesson.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+          <div key={lesson.id} className={`p-4 border-b border-gray-100 dark:border-slate-700 last:border-0 flex flex-col md:flex-row md:items-center justify-between gap-4 ${lesson.status === 'Cancelled' ? 'bg-gray-50 dark:bg-slate-700' : ''}`}>
+            <div className={`flex-1 ${lesson.status === 'Cancelled' ? 'opacity-60' : ''}`}>
+              {/* Title & Time */}
+              <div className="flex items-center gap-3 mb-2">
+                  <p className={`font-semibold text-gray-900 dark:text-white ${lesson.status === 'Cancelled' ? 'line-through decoration-gray-400' : ''}`}>{lesson.title}</p>
+                  <span className={`text-sm text-gray-500 dark:text-gray-400 flex items-center ${lesson.status === 'Cancelled' ? 'line-through' : ''}`}>
+                      <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                      {safeDate(lesson.date).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short'})} 
+                      <span className="mx-1.5">•</span>
+                      {lesson.time || safeDate(lesson.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
                       {lesson.timeEnd ? ` - ${lesson.timeEnd}` : ''}
                   </span>
-                  {lesson.focus && <span className="ml-2 pl-2 border-l border-gray-300 dark:border-slate-600 italic text-gray-400">Focus: {lesson.focus}</span>}
               </div>
-              <p className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center mt-1 font-medium">
-                  <Horse className="w-3 h-3 mr-1" />
-                  Horse: {getParticipants(lesson).find(p => p.student === student.name)?.horse || 'TBD'}
-              </p>
+
+              {/* Detail Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                  {/* Horse */}
+                  <div className="flex items-center text-gray-600 dark:text-slate-300">
+                      <Horse className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                      <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2">Horse:</span>
+                      <span className="font-medium">{getParticipants(lesson).find(p => p.student === student.name)?.horse || 'TBD'}</span>
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex items-center text-gray-600 dark:text-slate-300">
+                      <MapIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                      <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2">Loc:</span>
+                      <span>{lesson.location || 'Main Arena'}</span>
+                  </div>
+
+                  {/* Focus */}
+                  {lesson.focus && (
+                      <div className="flex items-start text-gray-600 dark:text-slate-300 sm:col-span-2">
+                          <Activity className="w-3.5 h-3.5 mr-2 text-gray-400 mt-0.5" />
+                          <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2 mt-0.5">Focus:</span>
+                          <span>{lesson.focus}</span>
+                      </div>
+                  )}
+
+                  {/* Equipment */}
+                  {lesson.equipment && (
+                      <div className="flex items-start text-gray-600 dark:text-slate-300 sm:col-span-2">
+                          <Package className="w-3.5 h-3.5 mr-2 text-gray-400 mt-0.5" />
+                          <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2 mt-0.5">Bring:</span>
+                          <span className="text-indigo-600 dark:text-indigo-400 font-medium">{lesson.equipment}</span>
+                      </div>
+                  )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Badges */}
+            <div className="flex items-center gap-2 self-start md:self-center pt-2 md:pt-0">
                 {lesson.status === 'Pending' && <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 text-xs px-2 py-1 rounded-full font-medium">Pending</span>}
                 {lesson.status === 'Cancelled' && <span className="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 text-xs px-2 py-1 rounded-full font-bold">Cancelled</span>}
                 <Badge type={getSmartLessonColor(lesson)}>{lesson.type}</Badge>
@@ -842,22 +878,58 @@ const ParentView = ({ parent, students, lessons, settings, onBookLesson, announc
             <Card className="overflow-hidden mb-8">
                 <div className="divide-y divide-gray-100 dark:divide-slate-700">
                     {childLessons.map(lesson => (
-                        <div key={lesson.id} className={`p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-700 ${lesson.status === 'Cancelled' ? 'bg-gray-50 dark:bg-slate-700' : ''}`}>
-                            <div className={lesson.status === 'Cancelled' ? 'opacity-60' : ''}>
-                                <p className={`font-semibold text-gray-900 dark:text-white ${lesson.status === 'Cancelled' ? 'line-through decoration-gray-400' : ''}`}>{lesson.title}</p>
-                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    <span className={lesson.status === 'Cancelled' ? 'line-through' : ''}>
-                                        {safeDate(lesson.date).toLocaleDateString('en-GB')} {lesson.time || safeDate(lesson.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                        <div key={lesson.id} className={`p-4 border-b border-gray-100 dark:border-slate-700 last:border-0 flex flex-col md:flex-row md:items-center justify-between gap-4 ${lesson.status === 'Cancelled' ? 'bg-gray-50 dark:bg-slate-700' : ''}`}>
+                            <div className={`flex-1 ${lesson.status === 'Cancelled' ? 'opacity-60' : ''}`}>
+                                {/* Title & Time */}
+                                <div className="flex items-center gap-3 mb-2">
+                                    <p className={`font-semibold text-gray-900 dark:text-white ${lesson.status === 'Cancelled' ? 'line-through decoration-gray-400' : ''}`}>{lesson.title}</p>
+                                    <span className={`text-sm text-gray-500 dark:text-gray-400 flex items-center ${lesson.status === 'Cancelled' ? 'line-through' : ''}`}>
+                                        <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                                        {safeDate(lesson.date).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short'})} 
+                                        <span className="mx-1.5">•</span>
+                                        {lesson.time || safeDate(lesson.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
                                         {lesson.timeEnd ? ` - ${lesson.timeEnd}` : ''}
                                     </span>
-                                    {lesson.focus && <span className="ml-2 pl-2 border-l border-gray-300 dark:border-slate-600 italic text-gray-400">Focus: {lesson.focus}</span>}
                                 </div>
-                                <p className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center mt-1 font-medium">
-                                    <Horse className="w-3 h-3 mr-1" />
-                                    Horse: {getParticipants(lesson).find(p => p.student === activeChild.name)?.horse || 'TBD'}
-                                </p>
+
+                                {/* Detail Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                                    {/* Horse */}
+                                    <div className="flex items-center text-gray-600 dark:text-slate-300">
+                                        <Horse className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                                        <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2">Horse:</span>
+                                        <span className="font-medium">{getParticipants(lesson).find(p => p.student === activeChild.name)?.horse || 'TBD'}</span>
+                                    </div>
+
+                                    {/* Location */}
+                                    <div className="flex items-center text-gray-600 dark:text-slate-300">
+                                        <MapIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                                        <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2">Loc:</span>
+                                        <span>{lesson.location || 'Main Arena'}</span>
+                                    </div>
+
+                                    {/* Focus */}
+                                    {lesson.focus && (
+                                        <div className="flex items-start text-gray-600 dark:text-slate-300 sm:col-span-2">
+                                            <Activity className="w-3.5 h-3.5 mr-2 text-gray-400 mt-0.5" />
+                                            <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2 mt-0.5">Focus:</span>
+                                            <span>{lesson.focus}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Equipment */}
+                                    {lesson.equipment && (
+                                        <div className="flex items-start text-gray-600 dark:text-slate-300 sm:col-span-2">
+                                            <Package className="w-3.5 h-3.5 mr-2 text-gray-400 mt-0.5" />
+                                            <span className="text-xs uppercase tracking-wide font-bold text-gray-400 mr-2 mt-0.5">Bring:</span>
+                                            <span className="text-indigo-600 dark:text-indigo-400 font-medium">{lesson.equipment}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
+
+                            {/* Badges */}
+                            <div className="flex items-center gap-2 self-start md:self-center pt-2 md:pt-0">
                                 {lesson.status === 'Pending' && <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 text-xs px-2 py-1 rounded-full font-medium">Pending</span>}
                                 {lesson.status === 'Cancelled' && <span className="bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 text-xs px-2 py-1 rounded-full font-bold">Cancelled</span>}
                                 <Badge type={getSmartLessonColor(lesson)}>{lesson.type}</Badge>

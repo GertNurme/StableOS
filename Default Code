@@ -1763,6 +1763,35 @@ const HorsesModule = ({ horses, onAddHorse, onUpdateHorse, onDeleteHorse, readOn
             <div className="flex justify-end pt-4"><Button type="submit">Save</Button></div>
         </form>
       </Modal>
+
+      <Modal isOpen={showFeedList} onClose={() => setShowFeedList(false)} title="Barn Feed List">
+          <div className="space-y-4">
+              <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-700">
+                  <table className="w-full text-sm text-left text-gray-600 dark:text-slate-300">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-slate-200">
+                          <tr>
+                              <th className="px-4 py-3 font-bold">Stall</th>
+                              <th className="px-4 py-3 font-bold">Horse</th>
+                              <th className="px-4 py-3 font-bold">Feed / Diet</th>
+                          </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                          {[...horses].sort((a,b) => (a.stall || '').localeCompare(b.stall || '')).map((h) => (
+                              <tr key={h.id} className="bg-white dark:bg-slate-800">
+                                  <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">{h.stall}</td>
+                                  <td className="px-4 py-3 font-medium text-indigo-600 dark:text-indigo-400">{h.name}</td>
+                                  <td className="px-4 py-3">{h.feed || <span className="text-gray-400 italic">Standard</span>}</td>
+                              </tr>
+                          ))}
+                          {horses.length === 0 && <tr><td colSpan="3" className="px-4 py-8 text-center text-gray-500">No horses found.</td></tr>}
+                      </tbody>
+                  </table>
+              </div>
+              <div className="flex justify-end pt-2">
+                  <Button onClick={() => setShowFeedList(false)}>Close</Button>
+              </div>
+          </div>
+      </Modal>
     </div>
   );
 };

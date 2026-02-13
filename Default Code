@@ -4202,12 +4202,12 @@ const App = () => {
   const navItems = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { id: 'schedule', label: 'Schedule', icon: Calendar },
+      { id: 'tasks', label: 'Tasks', icon: ClipboardList },
+      { id: 'inventory', label: 'Inventory', icon: Package },
       { id: 'horses', label: 'Horses', icon: Horse },
       { id: 'students', label: 'Students', icon: GraduationCap },
       { id: 'parents', label: 'Parents', icon: Users },
       { id: 'staff', label: 'Staff', icon: UserCog },
-      { id: 'tasks', label: 'Tasks', icon: ClipboardList },
-      { id: 'inventory', label: 'Inventory', icon: Package },
       { id: 'messages', label: 'Messages', icon: MessageSquare },
       { id: 'announcements', label: 'Announcements', icon: Megaphone },
       { id: 'settings', label: 'Settings', icon: Settings },
@@ -4338,14 +4338,14 @@ const App = () => {
       const staffNav = [
           { id: 'home', label: 'Staff Dashboard', icon: LayoutDashboard },
           ...(settings.staffScheduleManagement ? [{ id: 'schedule', label: 'Schedule', icon: Calendar }] : []),
+          ...(settings.staffViewTasks ? [{ id: 'tasks', label: 'Tasks', icon: ClipboardList }] : []),
+          ...(settings.staffInventoryControl ? [{ id: 'inventory', label: 'Inventory', icon: Package }] : []),
           { id: 'horses', label: 'Horses', icon: Horse },
           ...(settings.staffViewStudents ? [{ id: 'students', label: 'Students', icon: GraduationCap }] : []),
           ...(settings.staffViewParents ? [{ id: 'parents', label: 'Parents', icon: Users }] : []),
           ...(settings.staffViewStaff ? [{ id: 'staff', label: 'Staff', icon: UserCog }] : []),
-          ...(settings.staffViewTasks ? [{ id: 'tasks', label: 'Tasks', icon: ClipboardList }] : []),
-          ...(settings.staffInventoryControl ? [{ id: 'inventory', label: 'Inventory', icon: Package }] : []),
-          ...(settings.staffManageAnnouncements ? [{ id: 'announcements', label: 'News', icon: Megaphone }] : []),
-          { id: 'messages', label: 'Messages', icon: MessageSquare }
+          { id: 'messages', label: 'Messages', icon: MessageSquare },
+          ...(settings.staffManageAnnouncements ? [{ id: 'announcements', label: 'Announcements', icon: Megaphone }] : []),
       ];
 
       return (

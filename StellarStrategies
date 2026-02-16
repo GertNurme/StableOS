@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Strategies | Pro Trader Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        stellar: {
+                            dark: '#0B0C15',
+                            card: '#161824',
+                            accent: '#6366F1',
+                            glow: '#818CF8',
+                            success: '#10B981',
+                            danger: '#EF4444',
+                            warning: '#F59E0B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Global Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0B0C15; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366F1; }
+
+        /* Force Visible Scrollbar for Chat */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #6366F1 #1F2937; /* Thumb Track */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px; /* Wider for visibility */
+            display: block; /* Force display */
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827; /* Dark track */
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6366F1; /* Indigo thumb */
+            border-radius: 4px;
+            border: 1px solid #111827; /* Contrast border */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #818CF8;
+        }
+
+        .glass-card {
+            background: rgba(22, 24, 36, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .input-stellar {
+            background: #11131F;
+            border: 1px solid #374151;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-stellar:focus {
+            border-color: #6366F1; outline: none; box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
+        }
+
+        .strength-bar-fill { transition: width 1s ease-in-out; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); }
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .aspect-video { aspect-ratio: 16 / 9; }
+
+        /* Slide Container */
+        .slide-container {
+            background-color: #0B0C15;
+            border-radius: 16px;
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 60px;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .slide-container.active-slide { display: flex; }
+        .slide-container h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; font-family: 'Outfit'; font-weight: 700; color: white; }
+        .slide-container p { font-size: 1.1rem; color: #94A3B8; line-height: 1.6; }
+        .gradient-text { background: linear-gradient(to right, #818CF8, #C084FC); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .bubble { word-break: break-word; overflow-wrap: break-word; }
+        
+        /* Tiled Layouts within Slides */
+        .tiled-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; }
+        .tile { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; }
+        .tile .icon { color: #6366F1; font-size: 24px; margin-bottom: 15px; background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 8px; display: inline-block; }
+    </style>
+</head>
+<body class="bg-stellar-dark text-gray-300 font-sans antialiased flex flex-col min-h-screen">
+
+    <!-- TradingView Ticker -->
+    <div class="tradingview-widget-container sticky top-0 z-[60] h-[46px]">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+            "symbols": [
+                { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+                { "proName": "FOREXCOM:NSXUSD", "title": "US 100" },
+                { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+                { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
+                { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" },
+                { "proName": "FX_IDC:XAUUSD", "title": "Gold" }
+            ],
+            "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "displayMode": "adaptive", "locale": "en"
+        }
+        </script>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 top-[46px] bg-stellar-dark/80 backdrop-blur-md border-b border-white/5" id="navbar">
+        <div class="max-w-[1600px] mx-auto px-6">
+            <div class="flex justify-between items-center h-16">
+                <a href="#" class="flex items-center space-x-2 group">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                        <i data-lucide="zap" class="text-white w-5 h-5"></i>
+                    </div>
+                    <span class="font-heading font-bold text-xl text-white tracking-wide">STELLAR<span class="text-indigo-400">STRATEGIES</span></span>
+                </a>
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="#dashboard" class="text-sm font-medium hover:text-white transition-colors">Terminal</a>
+                    <a href="#catalog" class="text-sm font-medium hover:text-white transition-colors">Tools</a>
+                    <a href="#learn" class="text-sm font-medium hover:text-white transition-colors">Academy</a>
+                    <a href="#contact" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20">Get Access</a>
+                </div>
+                <button class="lg:hidden" onclick="toggleMobileMenu()"><i data-lucide="menu"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="pt-32 pb-10 px-4 md:px-6 max-w-[1800px] mx-auto min-h-screen">
+        
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-heading font-bold text-white flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="text-indigo-500"></i> Market Terminal
+                </h1>
+                <p class="text-gray-500 text-xs mt-1">Real-time trading environment • Tallinn, Estonia</p>
+            </div>
+            <div id="live-clock" class="text-indigo-400 font-mono text-sm font-bold bg-indigo-900/20 px-3 py-1.5 rounded border border-indigo-500/30">
+                --:--:-- UTC
+            </div>
+        </div>
+
+        <!-- Top Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="glass-card rounded-xl p-5 border-l-4 border-l-indigo-500 flex flex-col h-[320px]">
+                <h3 class="font-bold text-white flex items-center gap-2 text-sm uppercase tracking-wider mb-4"><i data-lucide="globe" class="w-4 h-4 text-indigo-400"></i> Sessions</h3>
+                <div id="session-container" class="space-y-4 overflow-y-auto pr-1 custom-scrollbar"></div>
+            </div>
+            <div class="glass-card rounded-xl p-5 border-l-4 border-l-teal-500 flex flex-col h-[320px]">
+                <div class="flex justify-between items-center mb-4 uppercase text-sm tracking-wider">
+                    <h3 class="font-bold text-white">Strength Meter</h3>
+                    <button onclick="refreshStrength()" class="text-gray-500 hover:text-white transition-transform active:rotate-180"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                </div>
+                <div class="space-y-3 flex-grow" id="strength-container"></div>
+            </div>
+            <div class="glass-card rounded-xl p-5 border-l-4 border-l-purple-500 h-[320px] relative overflow-hidden flex flex-col">
+                <h3 class="font-bold text-white text-sm uppercase tracking-wider mb-4">Daily Outlook</h3>
+                <div id="daily-bias-content" class="text-sm text-gray-400 leading-relaxed overflow-y-auto pr-1 custom-scrollbar">No daily outlook published yet. Check back during London open.</div>
+                <div class="mt-auto pt-4 border-t border-gray-700/50 flex justify-between items-center text-[10px] text-gray-500">
+                    <span>Stellar Strategies Analysts</span>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-0.5 rounded bg-green-500/10 text-green-500 border border-green-500/20">Bullish</span>
+                        <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-500">Neutral</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Economic Calendar -->
+            <div class="lg:col-span-2 glass-card rounded-xl overflow-hidden h-[680px] border border-gray-800">
+                <div class="tradingview-widget-container h-full">
+                    <div class="tradingview-widget-container__widget h-full"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                    { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "680", "locale": "en", "importanceFilter": "-1,0,1", "countryFilter": "us,eu,gb,jp,au,ca,ch,nz" }
+                    </script>
+                </div>
+            </div>
+
+            <!-- Tabbed Utility Card (AI Messenger Fixed Height) -->
+            <div class="glass-card rounded-xl flex flex-col h-[680px] overflow-hidden">
+                <div class="flex border-b border-gray-800 flex-shrink-0">
+                    <button onclick="switchTab('signals')" id="tab-signals" class="flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all">Signals</button>
+                    <button onclick="switchTab('calc')" id="tab-calc" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest transition-all">Risk</button>
+                    <button onclick="switchTab('ai')" id="tab-ai" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-center gap-1 transition-all">AI <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i></button>
+                </div>
+
+                <!-- Signals Tab -->
+                <div id="content-signals" class="flex-grow flex flex-col min-h-0">
+                    <div class="bg-gray-900/50 border-b border-gray-800 p-2 flex flex-col gap-2">
+                        <div class="flex justify-between items-center px-2">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold">Analysis</span>
+                            <select id="tv-symbol-select" onchange="loadTradingViewSignal(this.value)" class="bg-gray-800 text-white text-[10px] rounded px-2 py-1 border border-gray-700">
+                                <option value="FX:XAUUSD">Gold (XAUUSD)</option>
+                                <option value="FX:EURUSD">EURUSD</option>
+                                <option value="BITSTAMP:BTCUSD">Bitcoin</option>
+                                <option value="FOREXCOM:NSXUSD">US 100</option>
+                            </select>
+                        </div>
+                        <div id="tv-technical-widget" class="h-[340px] w-full relative overflow-hidden bg-[#131722] p-2 pr-4"></div>
+                    </div>
+                    <div class="p-2 bg-indigo-900/20 border-y border-indigo-500/10 text-[10px] font-bold text-indigo-400 text-center uppercase tracking-widest">Analyst Live Calls</div>
+                    <div id="signals-list" class="flex-grow overflow-y-auto p-3 space-y-3 custom-scrollbar"></div>
+                </div>
+
+                <!-- Risk Tab -->
+                <div id="content-calc" class="p-6 flex-grow hidden flex-col">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-4 tracking-widest">Risk Management</h4>
+                    <form onsubmit="calculateRisk(event)" class="space-y-4">
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Account Balance</label>
+                            <input type="number" id="balance" class="input-stellar w-full rounded p-3 text-sm" placeholder="10000" value="10000">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Risk %</label>
+                                <input type="number" id="risk" class="input-stellar w-full rounded p-3 text-sm" placeholder="1.0" value="1.0" step="0.1">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Stop (Pips)</label>
+                                <input type="number" id="pips" class="input-stellar w-full rounded p-3 text-sm" placeholder="20" value="20">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-all">Calculate</button>
+                    </form>
+                    <div id="result-box" class="mt-6 hidden p-6 bg-green-900/10 border border-green-500/20 rounded-xl text-center">
+                         <div class="text-3xl font-bold text-white tracking-tighter"><span id="lot-result">0.00</span> <span class="text-sm font-medium text-gray-400 uppercase">Lots</span></div>
+                    </div>
+                </div>
+
+                <!-- AI Tab (FIXED MESSENGER) -->
+                <div id="content-ai" class="flex-grow flex flex-col min-h-0 bg-stellar-dark/30 hidden h-full">
+                    <div id="ai-chat-history" class="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar flex flex-col">
+                        <!-- Permanent Welcome Message -->
+                        <div class="flex gap-3 max-w-[85%] self-start flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                            </div>
+                            <div class="bg-gray-800 border border-gray-700/50 rounded-2xl rounded-tl-none p-3 text-gray-300 text-xs leading-relaxed shadow-lg bubble">
+                                Hello! I am Stellar AI, your professional trading assistant. Ask me anything about market structure, technical analysis, or our cTrader tools.
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Messenger Input -->
+                    <div class="p-4 border-t border-gray-800 bg-stellar-dark/50 flex-shrink-0">
+                        <div class="relative flex items-center gap-2 bg-gray-900 rounded-2xl px-4 py-2 border border-gray-700 focus-within:border-indigo-500/50 transition-all shadow-inner">
+                            <textarea id="ai-input" 
+                                class="bg-transparent text-white text-xs w-full focus:outline-none resize-none py-1 custom-scrollbar" 
+                                placeholder="Message Stellar AI..." 
+                                rows="1"
+                                onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); askStellarAI(); }"></textarea>
+                            <button onclick="askStellarAI()" class="text-indigo-500 hover:text-indigo-400 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tool Catalog -->
+        <div id="catalog" class="pt-16 mb-8 border-t border-gray-800">
+            <h2 class="text-3xl font-heading font-bold text-white text-center uppercase tracking-widest">Product Catalog</h2>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mt-10">
+                <div class="flex gap-2 bg-gray-900/50 p-1 rounded-full border border-gray-800">
+                    <button onclick="filterTools('all')" class="px-6 py-2 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-lg active-filter filter-btn" data-filter="all">ALL</button>
+                    <button onclick="filterTools('indicator')" class="px-6 py-2 rounded-full text-[10px] font-bold text-gray-400 filter-btn" data-filter="indicator">INDICATORS</button>
+                    <button onclick="filterTools('cbot')" class="px-6 py-2 rounded-full text-[10px] font-bold text-gray-400 filter-btn" data-filter="cbot">CBOTS</button>
+                </div>
+                <div class="relative w-full md:w-80">
+                    <i data-lucide="search" class="absolute left-4 top-3 w-4 h-4 text-gray-500"></i>
+                    <input type="text" id="search-input" onkeyup="searchTools()" placeholder="Search products..." class="input-stellar w-full rounded-full py-3 pl-10 pr-6 text-xs">
+                </div>
+            </div>
+        </div>
+        <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-20"></div>
+
+        <!-- Academy -->
+        <section id="learn" class="pt-16 pb-20 border-t border-gray-800">
+            <div class="flex justify-between items-end mb-10 text-white">
+                <div><h2 class="text-3xl font-heading font-bold uppercase tracking-widest">Academy</h2><p class="text-gray-500 text-sm">Professional training modules.</p></div>
+                <div class="text-xs text-gray-500 bg-gray-900 px-4 py-1.5 rounded-full border border-gray-800">Progress: <span id="academy-progress-text" class="text-indigo-400 font-bold ml-1">0%</span></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 glass-card rounded-2xl overflow-hidden group cursor-pointer h-[450px]" onclick="openAcademy(1)">
+                    <div class="w-full h-full bg-gray-900 relative">
+                        <img src="https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
+                            <div class="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-indigo-600/30 group-hover:bg-indigo-500 transition-colors"><i data-lucide="play" class="text-white w-8 h-8 ml-1"></i></div>
+                            <h3 class="text-3xl font-bold uppercase tracking-tighter">Market Launchpad</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-1 flex flex-col gap-4 overflow-y-auto h-[450px] pr-2 custom-scrollbar" id="academy-grid"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modals -->
+    <div id="academy-modal" class="fixed inset-0 z-[100] hidden"><div class="absolute inset-0 modal-overlay" onclick="toggleAcademyModal()"></div><div class="absolute inset-0 flex items-center justify-center p-4"><div class="relative w-full max-w-[1200px] h-[80vh] bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-white/5 flex flex-col"><button onclick="toggleAcademyModal()" class="absolute top-6 right-6 z-50 text-gray-400 hover:text-white"><i data-lucide="x"></i></button><div class="absolute bottom-10 right-10 z-50 flex gap-4"><button onclick="changeSlide(-1)" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold border border-gray-700 transition-all">PREV</button><button onclick="changeSlide(1)" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all">NEXT</button></div><div id="slides-wrapper" class="w-full h-full flex flex-col items-center justify-center"></div></div></div></div>
+    
+    <div id="admin-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="toggleAdminModal()"></div>
+        <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-stellar-dark border-l border-white/10 shadow-2xl flex flex-col p-8 overflow-y-auto">
+            <div class="flex justify-between items-center mb-8 text-white"><h2 class="text-2xl font-bold">Admin</h2><button onclick="toggleAdminModal()"><i data-lucide="x"></i></button></div>
+            <div id="adm-tabs" class="flex gap-4 border-b border-gray-800 mb-8 pb-1">
+                <button onclick="switchAdminTab('tools')" id="adm-tab-tools" class="flex-1 py-2 text-white border-b-2 border-indigo-500 font-bold">Tools</button>
+                <button onclick="switchAdminTab('signals')" id="adm-tab-signals" class="flex-1 py-2 text-gray-500">Signals</button>
+            </div>
+            <div id="adm-content-tools" class="text-xs text-gray-500">Database seeded with store inventory. Use terminal logic to modify tool visibility.</div>
+            <div id="adm-content-signals" class="hidden text-xs text-gray-500">Signal console inactive.</div>
+        </div>
+    </div>
+
+    <footer class="bg-black py-20 border-t border-white/5 text-xs text-gray-600">
+        <div class="max-w-[1600px] mx-auto px-6 flex justify-between items-center">
+            <div>&copy; 2026 Stellar Strategies. | Tallinn, Estonia</div>
+            <button onclick="toggleAdminModal()" class="text-indigo-900 hover:text-indigo-500 font-bold uppercase tracking-widest transition-all">Console Login</button>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const apiKey = ""; 
+
+        let globalTools = []; let globalSignals = []; let currentUser = null;
+
+        const initAuth = async () => { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); }};
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user; if (!user) return;
+            // Listen for Tools
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'tools'), (snapshot) => {
+                if (snapshot.empty && globalTools.length === 0) seedDatabase();
+                globalTools = []; 
+                snapshot.forEach((doc) => globalTools.push({ id: doc.id, ...doc.data() }));
+                window.renderTools();
+            });
+            // Listen for Signals
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'signals'), (snapshot) => {
+                globalSignals = []; snapshot.forEach((doc) => globalSignals.push({ id: doc.id, ...doc.data() }));
+                globalSignals.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+                window.renderSignals();
+            });
+            // Listen for Bias
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'daily_bias', 'current'), (docSnap) => {
+                if (docSnap.exists()) window.renderBias(docSnap.data());
+            });
+        });
+
+        // AI Helper
+        async function callGemini(prompt, systemInstruction) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemInstruction }] } };
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Communication timeout.";
+            } catch (error) { return "Connection Error."; }
+        }
+
+        // Window-Exposed Global Functions
+        window.askStellarAI = async () => {
+            const input = document.getElementById('ai-input');
+            const history = document.getElementById('ai-chat-history');
+            const question = input.value.trim();
+            if (!question) return;
+            
+            const userBubble = document.createElement('div');
+            userBubble.className = "self-end bg-indigo-600 border border-indigo-500/50 rounded-2xl rounded-tr-none p-3 text-white text-xs leading-relaxed max-w-[85%] shadow-lg bubble";
+            userBubble.innerText = question;
+            history.appendChild(userBubble);
+            
+            input.value = '';
+            history.scrollTop = history.scrollHeight;
+
+            const typingMsg = document.createElement('div');
+            typingMsg.className = "flex gap-3 max-w-[85%] self-start";
+            typingMsg.innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i></div><div class="bg-gray-800 rounded-lg rounded-tl-none p-3 text-gray-400 text-xs flex gap-1 items-center"><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span></div>`;
+            history.appendChild(typingMsg);
+            history.scrollTop = history.scrollHeight;
+            lucide.createIcons();
+
+            const systemPrompt = "You are Stellar AI, a senior trading expert at StellarStrategies. Provide professional, technical, and educational answers on market structure and automation. Keep it under 3 concise sentences.";
+            const answer = await callGemini(question, systemPrompt);
+            
+            history.removeChild(typingMsg);
+            const aiBubble = document.createElement('div');
+            aiBubble.className = "flex gap-3 max-w-[85%] self-start";
+            aiBubble.innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i></div><div class="bg-gray-800 border border-gray-700/50 rounded-2xl rounded-tl-none p-3 text-gray-300 text-xs leading-relaxed shadow-md bubble">${answer}</div>`;
+            history.appendChild(aiBubble);
+            history.scrollTop = history.scrollHeight;
+            lucide.createIcons();
+        };
+
+        window.renderTools = () => {
+            const grid = document.getElementById('tools-grid');
+            const filter = document.querySelector('.active-filter')?.dataset.filter || 'all';
+            const term = document.getElementById('search-input')?.value.toLowerCase() || '';
+            if(!grid) return; grid.innerHTML = '';
+            globalTools.forEach(tool => {
+                if ((filter === 'all' || tool.category === filter) && tool.title.toLowerCase().includes(term)) {
+                    const card = document.createElement('div');
+                    card.className = "glass-card rounded-xl overflow-hidden group hover:border-indigo-500 transition-all duration-300";
+                    let badge = tool.badge ? `<span class="absolute top-3 right-3 px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-600 text-white z-10">${tool.badge}</span>` : '';
+                    card.innerHTML = `<div class="h-44 bg-gray-900 relative overflow-hidden">${badge}<div class="flex items-center justify-center h-full text-indigo-500 opacity-20 group-hover:scale-110 transition-transform"><i data-lucide="${tool.icon || 'box'}" class="w-16 h-16"></i></div></div><div class="p-5 flex flex-col h-32"><h3 class="font-bold text-white truncate text-sm uppercase tracking-tighter">${tool.title}</h3><p class="text-[10px] text-gray-500 line-clamp-2 mt-1 flex-grow">${tool.description}</p><a href="${tool.link}" target="_blank" class="block w-full text-center py-2.5 rounded bg-indigo-900/40 hover:bg-indigo-600 text-[10px] font-bold text-white transition-colors uppercase tracking-widest">Get Product</a></div>`;
+                    grid.appendChild(card);
+                }
+            });
+            lucide.createIcons();
+        };
+
+        window.filterTools = (category) => {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = btn.dataset.filter === category 
+                    ? "px-6 py-2 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-lg active-filter filter-btn" 
+                    : "px-6 py-2 rounded-full text-[10px] font-bold text-gray-400 filter-btn";
+            });
+            window.renderTools();
+        };
+
+        window.searchTools = () => window.renderTools();
+
+        window.loadTradingViewSignal = (symbol) => {
+            const container = document.getElementById('tv-technical-widget');
+            if (!container) return; container.innerHTML = '';
+            const script = document.createElement('script'); script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({ "interval": "15m", "width": "100%", "isTransparent": true, "height": "340", "symbol": symbol, "showIntervalTabs": true, "displayMode": "single", "locale": "en", "colorTheme": "dark" });
+            container.appendChild(script);
+        };
+
+        window.renderSignals = () => {
+            const container = document.getElementById('signals-list');
+            if(!container) return;
+            if(!document.querySelector('#tv-technical-widget script')) window.loadTradingViewSignal('FX:XAUUSD');
+            if(globalSignals.length === 0) { container.innerHTML = '<div class="text-center text-gray-600 py-6 text-[10px] font-medium">Awaiting live signals...</div>'; return; }
+            container.innerHTML = '';
+            globalSignals.forEach(sig => {
+                const isBuy = sig.type === 'BUY';
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border border-gray-700 bg-gray-800/30 border-l-4 ${isBuy ? 'border-l-green-500' : 'border-l-red-500'}`;
+                div.innerHTML = `<div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-white tracking-tighter">${sig.pair}</span><span class="text-[9px] font-bold px-2 py-0.5 rounded ${isBuy ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">${sig.type}</span></div><div class="grid grid-cols-3 gap-1 text-[10px]"><div><span class="text-gray-500 uppercase text-[8px]">ENTRY</span><br><span class="text-white font-mono">${sig.entry}</span></div><div><span class="text-gray-500 uppercase text-[8px]">TP</span><br><span class="text-green-400 font-mono">${sig.tp}</span></div><div><span class="text-gray-500 uppercase text-[8px]">SL</span><br><span class="text-red-400 font-mono">${sig.sl}</span></div></div>`;
+                container.appendChild(div);
+            });
+        };
+
+        window.renderBias = (d) => { const c = document.getElementById('daily-bias-content'); if(c) c.innerHTML = `<p class="text-gray-300 italic">${d.text || "Loading..."}</p>`; }
+
+        async function seedDatabase() {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools');
+            const tools = [
+                { title: "Market Structure Breakout", description: "Identify trend breaks based on lookback high/low ranges.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/950" },
+                { title: "BOS Trend 1.0", description: "Premium multi-timeframe Break of Structure analysis.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/220" },
+                { title: "MARSI Signal Plotter", description: "Actionable signals on Range Bars using MA and RSI.", category: "indicator", badge: "$15", link: "https://ctrader.com/products/189" },
+                { title: "Smart ADX", description: "Trend mastery with MTF scanner and exit targets.", category: "indicator", badge: "$39", link: "https://ctrader.com/products/2850" },
+                { title: "Market Session Ultimate", description: "Visualize sessions, PD levels, and Killzones.", category: "indicator", badge: "$15", link: "https://ctrader.com/products/894" },
+                { title: "VBO Volume Oscillator", description: "Next-gen volume analysis with Hyperbolic Tangent math.", category: "indicator", badge: "$19", link: "https://ctrader.com/products/2852" },
+                { title: "Candlestick Patterns Dashboard", description: "Detects 30+ patterns with win rate stats.", category: "indicator", badge: "$35", link: "https://ctrader.com/products/3113" },
+                { title: "Wave Trend Pro", description: "Momentum oscillator identifying potential reversals.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/981" },
+                { title: "Linear Regression Candles", description: "Visual candle data via regression slopes.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/805" },
+                { title: "Inside Bar with Signals", description: "Professional Inside Bar breakout detection.", category: "indicator", badge: "$15", link: "https://ctrader.com/products/1464" },
+                { title: "Visual Trend Momentum", description: "Trend strength with ATR filtering.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/716" },
+                { title: "QQE Indicator", description: "Classic QQE for trend changes.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/758" },
+                { title: "Scheduled Trade Executor", description: "Automated entry cBot for news/timed setups.", category: "cbot", badge: "Free", link: "https://ctrader.com/products/208" }
+            ];
+            for(const t of tools) await addDoc(colRef, t);
+        }
+
+        window.renderTools(); window.renderSignals();
+    </script>
+
+    <script>
+        // --- NON-MODULAR UI UTILS ---
+        function refreshStrength() {
+            const container = document.getElementById('strength-container');
+            if(!container) return; container.innerHTML = '';
+            ['USD', 'EUR', 'GBP', 'JPY', 'AUD'].forEach(curr => {
+                const s = Math.floor(Math.random() * 80) + 10;
+                const row = document.createElement('div');
+                row.className = "flex items-center gap-3";
+                row.innerHTML = `<span class="text-xs font-bold text-gray-400 w-8">${curr}</span><div class="flex-grow h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 strength-bar-fill" style="width: ${s}%"></div></div><span class="text-xs text-gray-500 w-6">${s}</span>`;
+                container.appendChild(row);
+            });
+        }
+        setTimeout(refreshStrength, 500);
+
+        function switchTab(tabId) {
+            ['calc', 'ai', 'signals'].forEach(t => {
+                const c = document.getElementById('content-' + t);
+                const b = document.getElementById('tab-' + t);
+                if (c) c.classList.add('hidden');
+                if (b) b.className = "flex-1 py-4 text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors uppercase tracking-widest";
+            });
+            const active = document.getElementById('content-' + tabId);
+            const btn = document.getElementById('tab-' + tabId);
+            if (active) active.classList.remove('hidden');
+            if (btn) btn.className = "flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all";
+            if (tabId === 'ai') {
+                const h = document.getElementById('ai-chat-history');
+                if(h) h.scrollTop = h.scrollHeight;
+            }
+        }
+
+        const lessons = [
+            { id: 1, title: "Forex Basics 101", level: "Beginner", icon: "book-open", duration: "10m" },
+            { id: 2, title: "Market Structure", level: "Intermediate", icon: "activity", duration: "15m" },
+            { id: 3, title: "cTrader Automate", level: "Advanced", icon: "cpu", duration: "25m" }
+        ];
+
+        function renderAcademy() {
+            const grid = document.getElementById('academy-grid');
+            if(!grid) return; grid.innerHTML = '';
+            lessons.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-card p-3 rounded-xl flex items-center justify-between group cursor-pointer hover:bg-gray-800/50 transition-colors";
+                card.onclick = () => window.openAcademy(item.id);
+                card.innerHTML = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-indigo-900/30 flex items-center justify-center text-indigo-400"><i data-lucide="${item.icon}" class="w-5 h-5"></i></div><div><h4 class="text-sm font-bold text-white group-hover:text-indigo-400">${item.title}</h4><p class="text-[10px] text-gray-500">${item.level} • ${item.duration}</p></div></div><i data-lucide="circle" class="w-4 h-4 text-gray-700"></i>`;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+        renderAcademy();
+
+        window.toggleMobileMenu = () => document.getElementById('mobile-menu').classList.toggle('hidden');
+        window.toggleAdminModal = () => document.getElementById('admin-modal').classList.toggle('hidden');
+        window.toggleAcademyModal = () => document.getElementById('academy-modal').classList.toggle('hidden');
+        
+        let slideIndex = 1;
+        const slides = {
+            1: `<h1>Stellar <span class="gradient-text">Academy</span></h1><p>Master technical analysis and algorithmic trading with our pro-level slide curriculum.</p>`,
+            2: `<h2>Risk Management</h2><p>Position sizing and percentage-based risk models are the foundation of trader longevity.</p>`
+        };
+        window.openAcademy = (id) => { slideIndex = 1; renderSlide(); toggleAcademyModal(); };
+        window.changeSlide = (d) => { slideIndex = Math.max(1, slideIndex + d); renderSlide(); };
+        function renderSlide() { const w = document.getElementById('slides-wrapper'); w.innerHTML = `<div class="slide-container active-slide">${slides[slideIndex] || slides[1]}</div>`; }
+
+        setInterval(() => {
+            const clock = document.getElementById('live-clock');
+            if(clock) clock.innerText = new Date().toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false }) + " UTC";
+            const container = document.getElementById('session-container');
+            if(container && container.innerHTML === '') {
+                const now = new Date();
+                const utcTime = now.getUTCHours() + (now.getUTCMinutes() / 60);
+                [{name:'Tokyo', s:0, e:9}, {name:'London', s:7, e:16}, {name:'New York', s:12, e:21}].forEach(s => {
+                    let isOpen = (utcTime >= s.s && utcTime < s.e);
+                    const div = document.createElement('div');
+                    div.className = "mb-4";
+                    div.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-gray-400">${s.name}</span><span class="text-[10px] px-1.5 rounded ${isOpen ? 'bg-green-500/20 text-green-400' : 'bg-gray-800 text-gray-600'}">${isOpen ? 'OPEN' : 'CLOSED'}</span></div><div class="h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${isOpen ? '100%' : '0%'}"></div></div>`;
+                    container.appendChild(div);
+                });
+            }
+        }, 1000);
+        lucide.createIcons();
+    </script>
+</body>
+</html>

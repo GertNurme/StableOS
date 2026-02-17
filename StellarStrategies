@@ -275,8 +275,8 @@
 
                 <!-- AI Tab (FIXED MESSENGER WITH SCROLLBAR) -->
                 <!-- Changed 'h-full' to 'h-auto' (removed h-full) and 'flex-grow' to 'flex-1' to respect parent flex container and not push input off screen -->
-                <div id="content-ai" class="flex-1 hidden flex-col min-h-0 bg-stellar-dark/30 overflow-hidden">
-                    <div id="ai-chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 flex flex-col">
+                <div id="content-ai" class="flex-1 hidden flex flex-col min-h-0 bg-stellar-dark/30 overflow-hidden relative">
+                    <div id="ai-chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0">
                         <!-- Permanent Welcome Message -->
                         <div class="flex gap-3 max-w-[85%] self-start flex-shrink-0">
                             <div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">

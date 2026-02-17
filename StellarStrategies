@@ -38,35 +38,48 @@
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #6366F1; }
 
-        /* Force Visible Scrollbar for Chat */
+        /* Force Visible Scrollbar for Chat & Lists */
         .custom-scrollbar {
             scrollbar-width: thin;
-            scrollbar-color: #6366F1 #1F2937; /* Thumb Track */
+            scrollbar-color: #6366F1 #1F2937;
         }
         .custom-scrollbar::-webkit-scrollbar {
-            width: 6px; /* Wider for visibility */
-            display: block; /* Force display */
+            width: 6px;
+            display: block;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #111827; /* Dark track */
+            background: #111827; 
             border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #6366F1; /* Indigo thumb */
+            background: #6366F1; 
             border-radius: 4px;
-            border: 1px solid #111827; /* Contrast border */
+            border: 1px solid #111827;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #818CF8;
         }
+        
+        #ai-chat-history::-webkit-scrollbar { width: 6px; }
+        #ai-chat-history::-webkit-scrollbar-track { background: rgba(17, 24, 39, 0.5); }
+        #ai-chat-history::-webkit-scrollbar-thumb { background: #6366F1; border-radius: 4px; }
 
         .glass-card {
             background: rgba(22, 24, 36, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth hover transition base */
         }
         
+        /* HOVER EFFECT: FLOATING PREVIEW */
+        .glass-card.product-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #6366F1;
+            box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.3);
+            z-index: 50; /* Ensure it floats above others */
+        }
+
         .input-stellar {
             background: #11131F;
             border: 1px solid #374151;
@@ -83,32 +96,19 @@
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        .aspect-video { aspect-ratio: 16 / 9; }
-
-        /* Slide Container */
-        .slide-container {
-            background-color: #0B0C15;
-            border-radius: 16px;
-            display: none; 
-            flex-direction: column;
-            justify-content: center;
-            padding: 40px 60px;
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
-        .slide-container.active-slide { display: flex; }
-        .slide-container h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; font-family: 'Outfit'; font-weight: 700; color: white; }
-        .slide-container p { font-size: 1.1rem; color: #94A3B8; line-height: 1.6; }
-        .gradient-text { background: linear-gradient(to right, #818CF8, #C084FC); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .bubble { word-break: break-word; overflow-wrap: break-word; }
+        .aspect-video { aspect-ratio: 16 / 9; }
         
-        /* Tiled Layouts within Slides */
-        .tiled-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; }
-        .tile { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; }
-        .tile .icon { color: #6366F1; font-size: 24px; margin-bottom: 15px; background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 8px; display: inline-block; }
+        /* Article Content Styling for Academy Modal */
+        .article-content h1 { font-family: 'Outfit'; font-size: 2rem; font-weight: 700; color: white; margin-bottom: 1.5rem; border-bottom: 1px solid #374151; padding-bottom: 0.5rem; }
+        .article-content h2 { font-family: 'Outfit'; font-size: 1.5rem; font-weight: 600; color: #818CF8; margin-top: 2rem; margin-bottom: 0.75rem; }
+        .article-content h3 { font-family: 'Outfit'; font-size: 1.25rem; font-weight: 600; color: #C084FC; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .article-content p { color: #9CA3AF; line-height: 1.7; margin-bottom: 1rem; font-size: 1rem; }
+        .article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #D1D5DB; }
+        .article-content li { margin-bottom: 0.5rem; }
+        .article-content strong { color: white; font-weight: 600; }
+        .article-content .highlight { background: rgba(99, 102, 241, 0.1); border-left: 3px solid #6366F1; padding: 1rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; }
     </style>
 </head>
 <body class="bg-stellar-dark text-gray-300 font-sans antialiased flex flex-col min-h-screen">
@@ -118,15 +118,16 @@
         <div class="tradingview-widget-container__widget"></div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
         {
-            "symbols": [
-                { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
-                { "proName": "FOREXCOM:NSXUSD", "title": "US 100" },
-                { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
-                { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
-                { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" },
-                { "proName": "FX_IDC:XAUUSD", "title": "Gold" }
-            ],
-            "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "displayMode": "adaptive", "locale": "en"
+        "symbols": [
+            { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+            { "proName": "FOREXCOM:NSXUSD", "title": "US 100" },
+            { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+            { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
+            { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" },
+            { "proName": "FX_IDC:USDJPY", "title": "USD/JPY" },
+            { "proName": "FX_IDC:XAUUSD", "title": "Gold" }
+        ],
+        "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "displayMode": "adaptive", "locale": "en"
         }
         </script>
     </div>
@@ -147,7 +148,9 @@
                     <a href="#learn" class="text-sm font-medium hover:text-white transition-colors">Academy</a>
                     <a href="#contact" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20">Get Access</a>
                 </div>
-                <button class="lg:hidden" onclick="toggleMobileMenu()"><i data-lucide="menu"></i></button>
+                <button class="lg:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
             </div>
         </div>
     </nav>
@@ -176,7 +179,7 @@
             <div class="glass-card rounded-xl p-5 border-l-4 border-l-teal-500 flex flex-col h-[320px]">
                 <div class="flex justify-between items-center mb-4 uppercase text-sm tracking-wider">
                     <h3 class="font-bold text-white">Strength Meter</h3>
-                    <button onclick="refreshStrength()" class="text-gray-500 hover:text-white transition-transform active:rotate-180"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                    <button onclick="refreshStrength()" class="text-gray-500 hover:text-white"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
                 </div>
                 <div class="space-y-3 flex-grow" id="strength-container"></div>
             </div>
@@ -195,13 +198,27 @@
 
         <!-- Terminal Row -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <!-- Economic Calendar -->
-            <div class="lg:col-span-2 glass-card rounded-xl overflow-hidden h-[680px] border border-gray-800">
-                <div class="tradingview-widget-container h-full">
-                    <div class="tradingview-widget-container__widget h-full"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                    { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "680", "locale": "en", "importanceFilter": "-1,0,1", "countryFilter": "us,eu,gb,jp,au,ca,ch,nz" }
-                    </script>
+            <!-- Market Intelligence Hub -->
+            <div class="lg:col-span-2 glass-card rounded-xl flex flex-col h-[680px] overflow-hidden border border-gray-800">
+                <div class="flex border-b border-gray-800 flex-shrink-0">
+                    <button onclick="switchMarketTab('calendar')" id="mtab-calendar" class="flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all">Economic Calendar</button>
+                    <button onclick="switchMarketTab('news')" id="mtab-news" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest transition-all">Live News</button>
+                </div>
+                <div id="market-calendar" class="flex-grow h-full bg-stellar-dark/30">
+                    <div class="tradingview-widget-container h-full">
+                        <div class="tradingview-widget-container__widget h-full"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                        { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "en", "importanceFilter": "-1,0,1", "countryFilter": "us,eu,gb,jp,au,ca,ch,nz" }
+                        </script>
+                    </div>
+                </div>
+                <div id="market-news" class="flex-grow h-full bg-stellar-dark/30 hidden">
+                    <div class="tradingview-widget-container h-full">
+                        <div class="tradingview-widget-container__widget h-full"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                        { "feedMode": "market", "market": "forex", "colorTheme": "dark", "isTransparent": true, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "en" }
+                        </script>
+                    </div>
                 </div>
             </div>
 
@@ -213,19 +230,19 @@
                     <button onclick="switchTab('ai')" id="tab-ai" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-center gap-1 transition-all">AI <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i></button>
                 </div>
 
-                <!-- Signals Tab -->
+                <!-- Signals Tab (Expanded Widget) -->
                 <div id="content-signals" class="flex-grow flex flex-col min-h-0">
                     <div class="bg-gray-900/50 border-b border-gray-800 p-2 flex flex-col gap-2">
                         <div class="flex justify-between items-center px-2">
                             <span class="text-[10px] text-gray-400 uppercase font-bold">Analysis</span>
-                            <select id="tv-symbol-select" onchange="loadTradingViewSignal(this.value)" class="bg-gray-800 text-white text-[10px] rounded px-2 py-1 border border-gray-700">
+                            <select id="tv-symbol-select" onchange="loadTradingViewSignal(this.value)" class="bg-gray-800 text-white text-[10px] rounded px-2 py-1 border border-gray-700 focus:outline-none">
                                 <option value="FX:XAUUSD">Gold (XAUUSD)</option>
                                 <option value="FX:EURUSD">EURUSD</option>
                                 <option value="BITSTAMP:BTCUSD">Bitcoin</option>
                                 <option value="FOREXCOM:NSXUSD">US 100</option>
                             </select>
                         </div>
-                        <div id="tv-technical-widget" class="h-[340px] w-full relative overflow-hidden bg-[#131722] p-2 pr-4"></div>
+                        <div id="tv-technical-widget" class="h-[425px] w-full relative overflow-hidden bg-[#131722] p-2 pr-4 rounded-lg border border-gray-800"></div>
                     </div>
                     <div class="p-2 bg-indigo-900/20 border-y border-indigo-500/10 text-[10px] font-bold text-indigo-400 text-center uppercase tracking-widest">Analyst Live Calls</div>
                     <div id="signals-list" class="flex-grow overflow-y-auto p-3 space-y-3 custom-scrollbar"></div>
@@ -256,9 +273,10 @@
                     </div>
                 </div>
 
-                <!-- AI Tab (FIXED MESSENGER) -->
-                <div id="content-ai" class="flex-grow flex flex-col min-h-0 bg-stellar-dark/30 hidden h-full">
-                    <div id="ai-chat-history" class="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar flex flex-col">
+                <!-- AI Tab (FIXED MESSENGER WITH SCROLLBAR) -->
+                <!-- Changed 'h-full' to 'h-auto' (removed h-full) and 'flex-grow' to 'flex-1' to respect parent flex container and not push input off screen -->
+                <div id="content-ai" class="flex-1 hidden flex-col min-h-0 bg-stellar-dark/30 overflow-hidden">
+                    <div id="ai-chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 flex flex-col">
                         <!-- Permanent Welcome Message -->
                         <div class="flex gap-3 max-w-[85%] self-start flex-shrink-0">
                             <div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
@@ -303,30 +321,34 @@
         </div>
         <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-20"></div>
 
-        <!-- Academy -->
+        <!-- Academy Section -->
         <section id="learn" class="pt-16 pb-20 border-t border-gray-800">
             <div class="flex justify-between items-end mb-10 text-white">
-                <div><h2 class="text-3xl font-heading font-bold uppercase tracking-widest">Academy</h2><p class="text-gray-500 text-sm">Professional training modules.</p></div>
-                <div class="text-xs text-gray-500 bg-gray-900 px-4 py-1.5 rounded-full border border-gray-800">Progress: <span id="academy-progress-text" class="text-indigo-400 font-bold ml-1">0%</span></div>
+                <div><h2 class="text-3xl font-heading font-bold uppercase tracking-widest">Stellar Academy</h2><p class="text-gray-500 text-sm">Professional trading resources & education.</p></div>
+                <div class="text-xs text-gray-500 bg-gray-900 px-4 py-1.5 rounded-full border border-gray-800">Knowledge Base</div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 glass-card rounded-2xl overflow-hidden group cursor-pointer h-[450px]" onclick="openAcademy(1)">
-                    <div class="w-full h-full bg-gray-900 relative">
-                        <img src="https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700">
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
-                            <div class="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-indigo-600/30 group-hover:bg-indigo-500 transition-colors"><i data-lucide="play" class="text-white w-8 h-8 ml-1"></i></div>
-                            <h3 class="text-3xl font-bold uppercase tracking-tighter">Market Launchpad</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="lg:col-span-1 flex flex-col gap-4 overflow-y-auto h-[450px] pr-2 custom-scrollbar" id="academy-grid"></div>
-            </div>
+            <!-- Dynamic Academy Grid -->
+            <div id="academy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
     </div>
 
-    <!-- Modals -->
-    <div id="academy-modal" class="fixed inset-0 z-[100] hidden"><div class="absolute inset-0 modal-overlay" onclick="toggleAcademyModal()"></div><div class="absolute inset-0 flex items-center justify-center p-4"><div class="relative w-full max-w-[1200px] h-[80vh] bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-white/5 flex flex-col"><button onclick="toggleAcademyModal()" class="absolute top-6 right-6 z-50 text-gray-400 hover:text-white"><i data-lucide="x"></i></button><div class="absolute bottom-10 right-10 z-50 flex gap-4"><button onclick="changeSlide(-1)" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold border border-gray-700 transition-all">PREV</button><button onclick="changeSlide(1)" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all">NEXT</button></div><div id="slides-wrapper" class="w-full h-full flex flex-col items-center justify-center"></div></div></div></div>
+    <!-- Academy Modal (Article Viewer) -->
+    <div id="academy-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="toggleAcademyModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-3xl max-h-[85vh] bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-white/5 flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b border-gray-800 bg-gray-900/50">
+                    <h3 id="modal-title" class="text-xl font-bold text-white">Lesson Title</h3>
+                    <button onclick="toggleAcademyModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div id="modal-content" class="p-8 overflow-y-auto custom-scrollbar article-content text-gray-300">
+                    <!-- Content injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
     
+    <!-- Admin Modal -->
     <div id="admin-modal" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 modal-overlay" onclick="toggleAdminModal()"></div>
         <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-stellar-dark border-l border-white/10 shadow-2xl flex flex-col p-8 overflow-y-auto">
@@ -334,9 +356,71 @@
             <div id="adm-tabs" class="flex gap-4 border-b border-gray-800 mb-8 pb-1">
                 <button onclick="switchAdminTab('tools')" id="adm-tab-tools" class="flex-1 py-2 text-white border-b-2 border-indigo-500 font-bold">Tools</button>
                 <button onclick="switchAdminTab('signals')" id="adm-tab-signals" class="flex-1 py-2 text-gray-500">Signals</button>
+                <button onclick="switchAdminTab('academy')" id="adm-tab-academy" class="flex-1 py-2 text-gray-500">Academy</button>
+                <button onclick="switchAdminTab('bias')" id="adm-tab-bias" class="flex-1 py-2 text-gray-500">Outlook</button>
             </div>
-            <div id="adm-content-tools" class="text-xs text-gray-500">Database seeded with store inventory. Use terminal logic to modify tool visibility.</div>
-            <div id="adm-content-signals" class="hidden text-xs text-gray-500">Signal console inactive.</div>
+            
+            <div id="adm-content-tools" class="text-xs text-gray-500">
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                    <h3 class="text-sm font-bold text-white mb-3" id="form-title">Add / Edit Tool</h3>
+                    <input type="hidden" id="edit-doc-id">
+                    <div class="space-y-3">
+                        <input type="text" id="tool-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Title">
+                        <textarea id="tool-desc" rows="2" class="input-stellar w-full rounded p-2 text-sm" placeholder="Description"></textarea>
+                        <input type="text" id="tool-image" class="input-stellar w-full rounded p-2 text-sm" placeholder="Image URL (Optional)">
+                        <div class="flex gap-2">
+                            <select id="tool-category" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indicator">Indicator</option><option value="cbot">cBot</option></select>
+                            <select id="tool-color" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indigo">Indigo</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="blue">Blue</option></select>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="tool-icon" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Icon (lucide)">
+                            <input type="text" id="tool-badge" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Badge">
+                        </div>
+                        <input type="text" id="tool-link" class="input-stellar w-full rounded p-2 text-sm" placeholder="Link URL">
+                        <div class="flex gap-2 pt-2"><button onclick="saveTool()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save</button><button onclick="resetForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button></div>
+                    </div>
+                </div>
+                <div id="admin-tool-list" class="space-y-2"></div>
+            </div>
+
+            <div id="adm-content-signals" class="hidden text-xs text-gray-500">
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                    <h3 class="text-sm font-bold text-white mb-3">Post Signal</h3>
+                    <div class="space-y-3">
+                         <div class="flex gap-2"><input type="text" id="sig-pair" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Pair (e.g. GOLD)"><select id="sig-type" class="input-stellar w-24 rounded p-2 text-sm"><option value="BUY">BUY</option><option value="SELL">SELL</option></select></div>
+                         <div class="flex gap-2"><input type="text" id="sig-entry" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Entry"><input type="text" id="sig-sl" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="SL"><input type="text" id="sig-tp" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="TP"></div>
+                         <button onclick="postSignal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Broadcast</button>
+                    </div>
+                </div>
+                <div id="admin-signal-list" class="space-y-2"></div>
+            </div>
+
+            <div id="adm-content-academy" class="hidden text-xs text-gray-500">
+                 <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                    <h3 class="text-sm font-bold text-white mb-3" id="acad-form-title">Add Academy Page</h3>
+                    <input type="hidden" id="edit-acad-id">
+                    <div class="space-y-3">
+                        <input type="text" id="acad-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Page Title (e.g. Forex Basics)">
+                        <input type="text" id="acad-desc" class="input-stellar w-full rounded p-2 text-sm" placeholder="Short Description">
+                        <input type="text" id="acad-icon" class="input-stellar w-full rounded p-2 text-sm" placeholder="Icon Name (lucide)">
+                        <label class="block text-gray-400 mt-2">Content HTML</label>
+                        <textarea id="acad-content" rows="10" class="input-stellar w-full rounded p-2 text-sm font-mono" placeholder="<h2>My Article Title</h2><p>Content goes here...</p>"></textarea>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="saveLesson()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save Page</button>
+                            <button onclick="resetAcadForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="admin-academy-list" class="space-y-2"></div>
+            </div>
+
+            <div id="adm-content-bias" class="hidden text-xs text-gray-500">
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                    <h3 class="text-sm font-bold text-white mb-3">Daily Outlook</h3>
+                    <textarea id="bias-text" rows="8" class="input-stellar w-full rounded-lg p-3 text-sm mb-3" placeholder="Enter market commentary..."></textarea>
+                    <button onclick="saveBias()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-colors">Publish Update</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -360,27 +444,35 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const apiKey = ""; 
 
-        let globalTools = []; let globalSignals = []; let currentUser = null;
+        let globalTools = []; let globalSignals = []; let globalAcademy = []; let currentUser = null;
 
         const initAuth = async () => { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); }};
         initAuth();
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user; if (!user) return;
-            // Listen for Tools
+            
+            // Tools
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'tools'), (snapshot) => {
                 if (snapshot.empty && globalTools.length === 0) seedDatabase();
                 globalTools = []; 
                 snapshot.forEach((doc) => globalTools.push({ id: doc.id, ...doc.data() }));
-                window.renderTools();
+                window.renderTools(); window.renderAdminList();
             });
-            // Listen for Signals
+            // Signals
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'signals'), (snapshot) => {
                 globalSignals = []; snapshot.forEach((doc) => globalSignals.push({ id: doc.id, ...doc.data() }));
                 globalSignals.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
-                window.renderSignals();
+                window.renderSignals(); window.renderAdminSignalList();
             });
-            // Listen for Bias
+            // Academy
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'academy'), (snapshot) => {
+                if (snapshot.empty) seedAcademy();
+                globalAcademy = [];
+                snapshot.forEach((doc) => globalAcademy.push({ id: doc.id, ...doc.data() }));
+                window.renderAcademy(); window.renderAdminAcademyList();
+            });
+            // Bias
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'daily_bias', 'current'), (docSnap) => {
                 if (docSnap.exists()) window.renderBias(docSnap.data());
             });
@@ -397,7 +489,7 @@
             } catch (error) { return "Connection Error."; }
         }
 
-        // Window-Exposed Global Functions
+        // --- GLOBAL EXPORTS ---
         window.askStellarAI = async () => {
             const input = document.getElementById('ai-input');
             const history = document.getElementById('ai-chat-history');
@@ -405,7 +497,7 @@
             if (!question) return;
             
             const userBubble = document.createElement('div');
-            userBubble.className = "self-end bg-indigo-600 border border-indigo-500/50 rounded-2xl rounded-tr-none p-3 text-white text-xs leading-relaxed max-w-[85%] shadow-lg bubble";
+            userBubble.className = "self-end bg-indigo-600 border border-indigo-500/50 rounded-2xl rounded-tr-none p-3 text-white text-xs leading-relaxed max-w-[85%] shadow-lg bubble flex-shrink-0";
             userBubble.innerText = question;
             history.appendChild(userBubble);
             
@@ -413,7 +505,7 @@
             history.scrollTop = history.scrollHeight;
 
             const typingMsg = document.createElement('div');
-            typingMsg.className = "flex gap-3 max-w-[85%] self-start";
+            typingMsg.className = "flex gap-3 max-w-[85%] self-start flex-shrink-0";
             typingMsg.innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i></div><div class="bg-gray-800 rounded-lg rounded-tl-none p-3 text-gray-400 text-xs flex gap-1 items-center"><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span></div>`;
             history.appendChild(typingMsg);
             history.scrollTop = history.scrollHeight;
@@ -424,7 +516,7 @@
             
             history.removeChild(typingMsg);
             const aiBubble = document.createElement('div');
-            aiBubble.className = "flex gap-3 max-w-[85%] self-start";
+            aiBubble.className = "flex gap-3 max-w-[85%] self-start flex-shrink-0";
             aiBubble.innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i></div><div class="bg-gray-800 border border-gray-700/50 rounded-2xl rounded-tl-none p-3 text-gray-300 text-xs leading-relaxed shadow-md bubble">${answer}</div>`;
             history.appendChild(aiBubble);
             history.scrollTop = history.scrollHeight;
@@ -439,9 +531,10 @@
             globalTools.forEach(tool => {
                 if ((filter === 'all' || tool.category === filter) && tool.title.toLowerCase().includes(term)) {
                     const card = document.createElement('div');
-                    card.className = "glass-card rounded-xl overflow-hidden group hover:border-indigo-500 transition-all duration-300";
-                    let badge = tool.badge ? `<span class="absolute top-3 right-3 px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-600 text-white z-10">${tool.badge}</span>` : '';
-                    card.innerHTML = `<div class="h-44 bg-gray-900 relative overflow-hidden">${badge}<div class="flex items-center justify-center h-full text-indigo-500 opacity-20 group-hover:scale-110 transition-transform"><i data-lucide="${tool.icon || 'box'}" class="w-16 h-16"></i></div></div><div class="p-5 flex flex-col h-32"><h3 class="font-bold text-white truncate text-sm uppercase tracking-tighter">${tool.title}</h3><p class="text-[10px] text-gray-500 line-clamp-2 mt-1 flex-grow">${tool.description}</p><a href="${tool.link}" target="_blank" class="block w-full text-center py-2.5 rounded bg-indigo-900/40 hover:bg-indigo-600 text-[10px] font-bold text-white transition-colors uppercase tracking-widest">Get Product</a></div>`;
+                    // Added 'product-card' class for specific hover targeting
+                    card.className = "glass-card product-card rounded-xl overflow-hidden group hover:border-indigo-500 transition-all duration-300 relative";
+                    let badge = tool.badge ? `<span class="absolute top-3 right-3 px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-600 text-white z-10 shadow-md">${tool.badge}</span>` : '';
+                    card.innerHTML = `<div class="h-44 bg-gray-900 relative overflow-hidden">${badge}${tool.imageUrl ? `<img src="${tool.imageUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">` : `<div class="flex items-center justify-center h-full text-indigo-500 opacity-20 group-hover:scale-110 transition-transform"><i data-lucide="${tool.icon || 'box'}" class="w-16 h-16"></i></div>`}</div><div class="p-5 flex flex-col h-32"><h3 class="font-bold text-white truncate text-sm uppercase tracking-tighter group-hover:text-indigo-400 transition-colors">${tool.title}</h3><p class="text-[10px] text-gray-500 line-clamp-2 mt-1 flex-grow">${tool.description}</p><a href="${tool.link}" target="_blank" class="block w-full text-center py-2.5 rounded bg-indigo-900/40 hover:bg-indigo-600 text-[10px] font-bold text-white transition-colors uppercase tracking-widest mt-2 border border-indigo-500/30 hover:border-indigo-500">View Product</a></div>`;
                     grid.appendChild(card);
                 }
             });
@@ -465,7 +558,7 @@
             const script = document.createElement('script'); script.type = 'text/javascript';
             script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js';
             script.async = true;
-            script.innerHTML = JSON.stringify({ "interval": "15m", "width": "100%", "isTransparent": true, "height": "340", "symbol": symbol, "showIntervalTabs": true, "displayMode": "single", "locale": "en", "colorTheme": "dark" });
+            script.innerHTML = JSON.stringify({ "interval": "15m", "width": "100%", "isTransparent": true, "height": "425", "symbol": symbol, "showIntervalTabs": true, "displayMode": "single", "locale": "en", "colorTheme": "dark" });
             container.appendChild(script);
         };
 
@@ -486,108 +579,457 @@
 
         window.renderBias = (d) => { const c = document.getElementById('daily-bias-content'); if(c) c.innerHTML = `<p class="text-gray-300 italic">${d.text || "Loading..."}</p>`; }
 
+        window.renderAcademy = () => {
+            const grid = document.getElementById('academy-grid');
+            if(!grid) return; grid.innerHTML = '';
+            globalAcademy.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-card p-4 rounded-xl flex items-center justify-between group cursor-pointer hover:bg-gray-800/50 transition-colors border border-gray-700/50";
+                card.onclick = () => window.openAcademy(item.id);
+                card.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-12 rounded-lg bg-indigo-900/30 flex items-center justify-center text-indigo-400"><i data-lucide="${item.icon || 'book-open'}" class="w-6 h-6"></i></div><div><h4 class="text-md font-bold text-white group-hover:text-indigo-400 transition-colors">${item.title}</h4><p class="text-xs text-gray-500 line-clamp-1">${item.desc}</p></div></div><i data-lucide="chevron-right" class="w-5 h-5 text-gray-600 group-hover:text-white transition-colors"></i>`;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        };
+
+        window.renderAdminAcademyList = () => {
+             const list = document.getElementById('admin-academy-list');
+             if(!list) return; list.innerHTML = '';
+             globalAcademy.forEach(l => {
+                 const d = document.createElement('div');
+                 d.className = "flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-700";
+                 d.innerHTML = `<span class="text-xs text-white truncate w-40">${l.title}</span><div class="flex gap-2"><button onclick="editLesson('${l.id}')" class="text-blue-400"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button onclick="deleteLesson('${l.id}')" class="text-red-400"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`;
+                 list.appendChild(d);
+             });
+             lucide.createIcons();
+        };
+
+        window.openAcademy = (id) => {
+            const lesson = globalAcademy.find(l => l.id === id);
+            if(lesson) {
+                document.getElementById('modal-title').innerText = lesson.title;
+                document.getElementById('modal-content').innerHTML = lesson.content;
+                toggleAcademyModal();
+            }
+        };
+
+        // --- ADMIN FUNCTIONS ---
+        window.saveTool = async () => { if (!currentUser) return; const title = document.getElementById('tool-title').value; const desc = document.getElementById('tool-desc').value; const category = document.getElementById('tool-category').value; const color = document.getElementById('tool-color').value; const icon = document.getElementById('tool-icon').value || 'box'; const imageUrl = document.getElementById('tool-image').value || ''; const badge = document.getElementById('tool-badge').value; const link = document.getElementById('tool-link').value || '#'; const editId = document.getElementById('edit-doc-id').value; if (!title) return alert("Title required"); const data = { title, description: desc, category, color, icon, imageUrl, badge, link }; const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools'); try { if (editId) await updateDoc(doc(colRef, editId), data); else await addDoc(colRef, data); window.resetForm(); } catch (e) { console.error(e); } };
+        window.deleteTool = async (id) => { if(!confirm("Delete?")) return; await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tools', id)); };
+        window.editTool = (id) => { const t = globalTools.find(i => i.id === id); if(!t) return; document.getElementById('edit-doc-id').value = t.id; document.getElementById('tool-title').value = t.title; document.getElementById('tool-desc').value = t.description; document.getElementById('tool-image').value = t.imageUrl || ''; document.getElementById('tool-link').value = t.link; document.getElementById('tool-icon').value = t.icon || ''; document.getElementById('tool-badge').value = t.badge || ''; document.getElementById('form-title').innerText = "Edit"; window.switchAdminTab('tools'); };
+        window.resetForm = () => { document.getElementById('edit-doc-id').value = ''; document.getElementById('tool-title').value = ''; document.getElementById('tool-desc').value = ''; document.getElementById('form-title').innerText = "Add Tool"; };
+        
+        window.saveLesson = async () => {
+            const title = document.getElementById('acad-title').value;
+            const desc = document.getElementById('acad-desc').value;
+            const icon = document.getElementById('acad-icon').value;
+            const content = document.getElementById('acad-content').value;
+            const editId = document.getElementById('edit-acad-id').value;
+            if(!title) return alert("Title required");
+            const data = { title, desc, icon, content };
+            if(editId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'academy', editId), data);
+            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'academy'), data);
+            window.resetAcadForm();
+        };
+        window.deleteLesson = async (id) => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'academy', id));
+        window.editLesson = (id) => { const l = globalAcademy.find(x => x.id === id); if(!l) return; document.getElementById('edit-acad-id').value = l.id; document.getElementById('acad-title').value = l.title; document.getElementById('acad-desc').value = l.desc; document.getElementById('acad-icon').value = l.icon; document.getElementById('acad-content').value = l.content; document.getElementById('acad-form-title').innerText = "Edit Lesson"; };
+        window.resetAcadForm = () => { document.getElementById('edit-acad-id').value = ''; document.getElementById('acad-title').value = ''; document.getElementById('acad-desc').value = ''; document.getElementById('acad-icon').value = ''; document.getElementById('acad-content').value = ''; document.getElementById('acad-form-title').innerText = "Add Lesson"; };
+        
+        window.postSignal = async () => { const pair = document.getElementById('sig-pair').value; const type = document.getElementById('sig-type').value; const entry = document.getElementById('sig-entry').value; const sl = document.getElementById('sig-sl').value; const tp = document.getElementById('sig-tp').value; if(!pair || !entry) return alert("Pair/Entry required"); await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'signals'), { pair: pair.toUpperCase(), type, entry, sl, tp, status: 'Active', timestamp: Date.now() }); document.getElementById('sig-pair').value = ''; };
+        window.updateSignalStatus = async (id, s) => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'signals', id), { status: s });
+        window.deleteSignal = async (id) => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'signals', id));
+        
+        window.renderAdminList = () => {
+             const list = document.getElementById('admin-tool-list');
+             if(!list) return; list.innerHTML = '';
+             globalTools.forEach(t => {
+                 const d = document.createElement('div');
+                 d.className = "flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-700";
+                 d.innerHTML = `<span class="text-xs text-white truncate w-32">${t.title}</span><div class="flex gap-1"><button onclick="editTool('${t.id}')" class="text-blue-400"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button onclick="deleteTool('${t.id}')" class="text-red-400"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`;
+                 list.appendChild(d);
+             });
+             lucide.createIcons();
+        };
+
+        window.renderAdminSignalList = () => {
+            const list = document.getElementById('admin-signal-list');
+            if(!list) return; list.innerHTML = '';
+            globalSignals.forEach(sig => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-700 mb-2";
+                item.innerHTML = `<div class="flex flex-col"><span class="text-xs font-bold text-white">${sig.pair} ${sig.type}</span><span class="text-[10px] text-gray-400">${sig.status}</span></div><div class="flex gap-2"><button onclick="updateSignalStatus('${sig.id}', 'Won')" class="text-green-500">🏆</button><button onclick="updateSignalStatus('${sig.id}', 'Lost')" class="text-red-500">❌</button><button onclick="deleteSignal('${sig.id}')" class="text-gray-500"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`;
+                list.appendChild(item);
+            });
+            lucide.createIcons();
+        };
+        
+        window.saveBias = async () => { if(!currentUser) return; const text = document.getElementById('bias-text').value; try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_bias', 'current'), { text, updatedAt: new Date() }); } catch(e) { console.error(e); } }
+
         async function seedDatabase() {
             const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools');
             const tools = [
-                { title: "Market Structure Breakout", description: "Identify trend breaks based on lookback high/low ranges.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/950" },
-                { title: "BOS Trend 1.0", description: "Premium multi-timeframe Break of Structure analysis.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/220" },
-                { title: "MARSI Signal Plotter", description: "Actionable signals on Range Bars using MA and RSI.", category: "indicator", badge: "$15", link: "https://ctrader.com/products/189" },
-                { title: "Smart ADX", description: "Trend mastery with MTF scanner and exit targets.", category: "indicator", badge: "$39", link: "https://ctrader.com/products/2850" },
-                { title: "Market Session Ultimate", description: "Visualize sessions, PD levels, and Killzones.", category: "indicator", badge: "$15", link: "https://ctrader.com/products/894" },
-                { title: "VBO Volume Oscillator", description: "Next-gen volume analysis with Hyperbolic Tangent math.", category: "indicator", badge: "$19", link: "https://ctrader.com/products/2852" },
-                { title: "Candlestick Patterns Dashboard", description: "Detects 30+ patterns with win rate stats.", category: "indicator", badge: "$35", link: "https://ctrader.com/products/3113" },
-                { title: "Wave Trend Pro", description: "Momentum oscillator identifying potential reversals.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/981" },
-                { title: "Linear Regression Candles", description: "Visual candle data via regression slopes.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/805" },
-                { title: "Inside Bar with Signals", description: "Professional Inside Bar breakout detection.", category: "indicator", badge: "$15", link: "https://ctrader.com/products/1464" },
-                { title: "Visual Trend Momentum", description: "Trend strength with ATR filtering.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/716" },
-                { title: "QQE Indicator", description: "Classic QQE for trend changes.", category: "indicator", badge: "Free", link: "https://ctrader.com/products/758" },
-                { title: "Scheduled Trade Executor", description: "Automated entry cBot for news/timed setups.", category: "cbot", badge: "Free", link: "https://ctrader.com/products/208" }
+                { 
+                    title: "Market Session Ultimate", 
+                    description: "Visualize trading sessions, opening ranges, and key price levels.", 
+                    category: "indicator", 
+                    badge: "Premium", 
+                    link: "https://ctrader.com/products/894",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/c6ab1a32-7da1-4d09-813c-75d33b8800b2_Market Session Ultimate 2.png"
+                },
+                { 
+                    title: "Market Structure Breakout", 
+                    description: "Identify trend breaks based on lookback high/low ranges.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/950",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/99d762b3-fbbe-489d-9c19-e72c41ffe387_cT_cs_4141285_EURUSD_2025-04-21_20-25-12.png"
+                },
+                { 
+                    title: "BOS Trend 1.0", 
+                    description: "Premium multi-timeframe Break of Structure analysis.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/220",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/808c7722-ba53-4633-b8a4-16f31eeb1fc2_[Stellar Strategies] BOS Trend.jpg"
+                },
+                { 
+                    title: "MARSI Signal Plotter", 
+                    description: "Actionable signals on Range Bars using MA and RSI.", 
+                    category: "indicator", 
+                    badge: "$15", 
+                    link: "https://ctrader.com/products/189",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/a423f7d2-eb34-49ee-bb17-13e5586550fb_MARSI 2.0.png"
+                },
+                { 
+                    title: "Smart ADX", 
+                    description: "Trend mastery with MTF scanner and exit targets.", 
+                    category: "indicator", 
+                    badge: "$39", 
+                    link: "https://ctrader.com/products/2850",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/9503ee65-5386-408e-b63c-9faacd672e08_Stellar ADX.png"
+                },
+                { 
+                    title: "VBO Volume Oscillator", 
+                    description: "Next-gen volume analysis with Hyperbolic Tangent math.", 
+                    category: "indicator", 
+                    badge: "$19", 
+                    link: "https://ctrader.com/products/2852",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/7dc1f1b1-2236-4d85-abb3-1c50a32aac9a_vbo.png"
+                },
+                { 
+                    title: "QQE Indicator", 
+                    description: "Classic QQE for trend changes.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/758",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/ed4b3af5-54e4-404e-80eb-a23fa7ef0282_cTrader_7oDDAbSmSP.png"
+                },
+                { 
+                    title: "Linear Regression Candles", 
+                    description: "Visual candle data via regression slopes.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/805",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/19ef277f-e0b6-48ef-8941-88bfbba145f3_cT_cs_4141285_EURUSD_2025-03-30_19-53-31.png"
+                },
+                { 
+                    title: "Inside Bar with Signals", 
+                    description: "Professional Inside Bar breakout detection.", 
+                    category: "indicator", 
+                    badge: "$15", 
+                    link: "https://ctrader.com/products/1464",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/c12d088e-7b52-4961-a0d2-7e38a2499bd3_cT_cs_4141285_EURUSD_2025-07-15_13-15-32.png"
+                },
+                { 
+                    title: "Visual Trend Momentum", 
+                    description: "Trend strength with ATR filtering.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/716",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/3835d044-1c21-4909-9d3c-2635f984b93d_visualtrendmomentum.jpg"
+                },
+                { 
+                    title: "Wave Trend Pro", 
+                    description: "Momentum oscillator with OB/OS signals.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/981",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/8c93438a-6b0a-4026-93b2-0694329a3bc1_cT_cs_4141285_EURUSD_2025-04-25_17-52-31.png"
+                },
+                { 
+                    title: "Candlestick Patterns Dashboard", 
+                    description: "Detects 30+ patterns with win rate stats.", 
+                    category: "indicator", 
+                    badge: "$35", 
+                    link: "https://ctrader.com/products/3113",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/ecbe4451-9dae-4dee-8bee-271c1e4e4ab1_CPD.png"
+                },
+                { 
+                    title: "Scheduled Trade Executor", 
+                    description: "Automated entry cBot for news/timed setups.", 
+                    category: "cbot", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/208",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/f13e96a0-274f-490e-8aa5-5a154d8bcf60_stellar12.jpg"
+                }
             ];
             for(const t of tools) await addDoc(colRef, t);
         }
 
+        async function seedAcademy() {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'academy');
+            const lessons = [
+                { 
+                    title: "Forex Basics 101", 
+                    desc: "Pip, Lots, and Leverage explained.", 
+                    icon: "book-open", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>A Beginner's Guide to Trading</h1>
+                            <p>Welcome to the exciting world of Forex trading! If you're new here, it can all seem a bit complex. But don't worry, the goal of this guide is to break down the fundamentals into simple, understandable concepts.</p>
+                            
+                            <h2>1. What is the Forex Market?</h2>
+                            <p>The Foreign Exchange (or Forex) market is the largest and most liquid financial market in the world. Think of it as a global marketplace where currencies are traded.</p>
+                            <ul>
+                                <li><strong>It's Global:</strong> A decentralized network with no central physical location.</li>
+                                <li><strong>It's 24/5:</strong> Opens in Sydney on Monday morning and closes in New York on Friday evening.</li>
+                                <li><strong>It's Huge:</strong> Trillions of dollars are traded every single day.</li>
+                            </ul>
+
+                            <h2>2. Essential Terminology</h2>
+                            <ul>
+                                <li><strong>Currency Pair:</strong> Currencies are traded in pairs (e.g., EUR/USD).</li>
+                                <li><strong>Pip:</strong> The smallest unit of price movement (usually the 4th decimal place).</li>
+                                <li><strong>Spread:</strong> The difference between the buy (ask) and sell (bid) price.</li>
+                                <li><strong>Leverage:</strong> Controlling a large position with a small amount of capital (e.g., 100:1).</li>
+                                <li><strong>Long vs. Short:</strong> Long means buying (expecting rise), Short means selling (expecting fall).</li>
+                            </ul>
+
+                            <h2>3. How Do You Make Money?</h2>
+                            <p>The goal is simple: Buy low and sell high, or sell high and buy low.</p>
+                            <div class="highlight">
+                                <strong>Example:</strong> You believe the Euro will strengthen against the Dollar. You buy EUR/USD at 1.0800. It rises to 1.0850. You close the trade for a 50-pip profit.
+                            </div>
+
+                            <h2>4. Getting Started</h2>
+                            <p>You need a reliable broker, a trading platform (like cTrader), a strategy, and strict risk management. We recommend starting with a demo account to practice risk-free.</p>
+                        </div>` 
+                },
+                { 
+                    title: "Strategy Library", 
+                    desc: "Foundational strategies for beginners.", 
+                    icon: "activity", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Strategy Library</h1>
+                            <p>A trading strategy is a set of rules that helps you identify when to buy, sell, or stay out of the market.</p>
+
+                            <h2>1. Trend Following</h2>
+                            <p>Based on the idea that markets moving in a direction will likely continue. Uses Moving Averages (MAs).</p>
+                            <ul>
+                                <li><strong>Buy Signal:</strong> Fast MA (e.g., 20) crosses above Slow MA (e.g., 50).</li>
+                                <li><strong>Sell Signal:</strong> Fast MA crosses below Slow MA.</li>
+                            </ul>
+
+                            <h2>2. Support and Resistance</h2>
+                            <p>Trading based on key levels where price has historically reversed.</p>
+                            <ul>
+                                <li><strong>Support:</strong> Price level where buying interest is strong (floor).</li>
+                                <li><strong>Resistance:</strong> Price level where selling interest is strong (ceiling).</li>
+                                <li><strong>Strategy:</strong> Buy near support, sell near resistance.</li>
+                            </ul>
+
+                            <h2>3. Breakout Trading</h2>
+                            <p>Entering the market as price moves outside a defined range with volume.</p>
+                            <ul>
+                                <li>Wait for a candle to close decisively outside the range.</li>
+                                <li>Look for volume confirmation.</li>
+                            </ul>
+
+                            <h2>4. Range Trading with Oscillators</h2>
+                            <p>Effective in sideways markets. Uses RSI or Stochastic.</p>
+                            <ul>
+                                <li><strong>Buy:</strong> Price at support + Oscillator Oversold.</li>
+                                <li><strong>Sell:</strong> Price at resistance + Oscillator Overbought.</li>
+                            </ul>
+                        </div>` 
+                },
+                { 
+                    title: "Trading Psychology", 
+                    desc: "Mastering the trader's mind.", 
+                    icon: "brain", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Psychology</h1>
+                            <p>Strategies are useless without mental discipline. Trading is 90% mental.</p>
+
+                            <h2>Greed and Fear</h2>
+                            <p><strong>Greed:</strong> Holding winning trades too long or over-leveraging. Antidote: A rigid trading plan.</p>
+                            <p><strong>Fear:</strong> Exiting good trades too early or FOMO (Fear Of Missing Out). Antidote: Trust your analysis and accept that missing moves is part of the game.</p>
+
+                            <h2>Common Traps</h2>
+                            <ul>
+                                <li><strong>Revenge Trading:</strong> Jumping back in after a loss to "make it back".</li>
+                                <li><strong>Confirmation Bias:</strong> Only seeing news that supports your trade.</li>
+                                <li><strong>Gambler's Fallacy:</strong> Believing a trend <em>must</em> reverse just because it's gone on for a long time.</li>
+                            </ul>
+
+                            <h2>Developing a Pro Mindset</h2>
+                            <ol>
+                                <li>Treat trading as a business, not a hobby.</li>
+                                <li>Focus on the <em>process</em> (following rules), not the profits.</li>
+                                <li>Review your journal weekly to identify emotional triggers.</li>
+                            </ol>
+                        </div>` 
+                },
+                { 
+                    title: "Trading Glossary", 
+                    desc: "The essential language of financial markets.", 
+                    icon: "list", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Glossary</h1>
+                            <p>The essential language of the financial markets.</p>
+
+                            <h2>A</h2>
+                            <p><strong>Appreciation:</strong> An increase in the value of an asset or currency.</p>
+                            <p><strong>Arbitrage:</strong> The practice of simultaneously buying and selling an asset in different markets to profit from a small difference in its price.</p>
+                            <p><strong>Ask Price:</strong> The price a seller is willing to accept (Buy price).</p>
+
+                            <h2>B</h2>
+                            <p><strong>Balance:</strong> Total money in account excluding open positions.</p>
+                            <p><strong>Base Currency:</strong> The first currency in a pair (e.g., EUR in EUR/USD).</p>
+                            <p><strong>Bear Market:</strong> A market where prices are falling.</p>
+                            <p><strong>Bid Price:</strong> The price a buyer is willing to pay (Sell price).</p>
+                            <p><strong>Bull Market:</strong> A market where prices are rising.</p>
+
+                            <h2>C</h2>
+                            <p><strong>Candlestick Chart:</strong> A chart displaying High, Low, Open, Close prices.</p>
+                            <p><strong>Commission:</strong> Fee charged by a broker.</p>
+
+                            <h2>D</h2>
+                            <p><strong>Day Trading:</strong> Opening and closing trades within the same day.</p>
+                            <p><strong>Drawdown:</strong> The peak-to-trough decline in account equity.</p>
+                            
+                            <h2>E</h2>
+                            <p><strong>Equity:</strong> Real-time account value (Balance + Floating P/L).</p>
+                            <p><strong>ECN:</strong> Electronic Communication Network (direct market access).</p>
+
+                            <h2>H</h2>
+                            <p><strong>Hawkish:</strong> Central bank stance favoring higher interest rates.</p>
+                            <p><strong>Hedging:</strong> Opening opposite positions to reduce risk.</p>
+
+                            <h2>L</h2>
+                            <p><strong>Leverage:</strong> Controlling large positions with small capital.</p>
+                            <p><strong>Liquidity:</strong> How easily an asset can be bought/sold.</p>
+                            <p><strong>Long:</strong> Buying an asset.</p>
+
+                            <h2>M</h2>
+                            <p><strong>Margin:</strong> Money set aside to keep a position open.</p>
+                            <p><strong>Margin Call:</strong> Warning that equity is too low to support positions.</p>
+
+                            <h2>P</h2>
+                            <p><strong>Pip:</strong> Smallest unit of price movement (0.0001 for most pairs).</p>
+                            <p><strong>Position Sizing:</strong> Calculating lot size based on risk.</p>
+
+                            <h2>S</h2>
+                            <p><strong>Scalping:</strong> Very short-term trading for small profits.</p>
+                            <p><strong>Short:</strong> Selling an asset.</p>
+                            <p><strong>Spread:</strong> Difference between Bid and Ask.</p>
+                            <p><strong>Stop Loss:</strong> Order to limit loss on a trade.</p>
+                            
+                            <h2>V</h2>
+                            <p><strong>Volatility:</strong> Measure of how dramatically prices change.</p>
+                        </div>` 
+                },
+                { 
+                    title: "Economic Indicators", 
+                    desc: "Understanding NFP, CPI, and GDP.", 
+                    icon: "bar-chart", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Economic Indicators Explained</h1>
+                            <p>Fundamental analysis involves understanding the economic forces driving currency values.</p>
+
+                            <h2>Non-Farm Payrolls (NFP)</h2>
+                            <p><strong>Impact: High.</strong> Measures U.S. job growth. Strong NFP is bullish for USD (signals strong economy, potential rate hikes). Weak NFP is bearish.</p>
+
+                            <h2>Consumer Price Index (CPI)</h2>
+                            <p><strong>Impact: High.</strong> Measures inflation. High CPI often forces central banks to raise rates (Bullish for currency). Low CPI allows lower rates (Bearish).</p>
+
+                            <h2>Gross Domestic Product (GDP)</h2>
+                            <p><strong>Impact: High.</strong> The scorecard of economic health. Positive growth is bullish; negative growth (recession) is bearish.</p>
+
+                            <h2>Central Bank Rate Decisions</h2>
+                            <p><strong>Impact: Very High.</strong> Interest rates drive capital flows. Higher rates attract investment (Bullish). Lower rates repel it (Bearish). Watch for "Hawkish" (raising) or "Dovish" (lowering) tones.</p>
+
+                            <div class="highlight">
+                                <strong>Pro Tip:</strong> Professional traders look for confluence—when technicals and fundamentals point in the same direction.
+                            </div>
+                        </div>` 
+                },
+                { 
+                    title: "Trading Journal", 
+                    desc: "The most powerful tool for improvement.", 
+                    icon: "edit-3", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Journal</h1>
+                            <p>A journal transforms trading from random gambling into a data-driven business.</p>
+
+                            <h2>Why Journal?</h2>
+                            <ul>
+                                <li><strong>Identify Patterns:</strong> See what works and what doesn't.</li>
+                                <li><strong>Improve Discipline:</strong> Accountability prevents impulsive trades.</li>
+                                <li><strong>Manage Emotions:</strong> Tracking feelings helps identify triggers.</li>
+                            </ul>
+
+                            <h2>What to Record</h2>
+                            <ul>
+                                <li><strong>Setup:</strong> Date, time, pair, position size.</li>
+                                <li><strong>Rationale:</strong> Why did you take the trade? (Tech/Fund reasons).</li>
+                                <li><strong>Screenshot:</strong> Capture the chart at the moment of entry.</li>
+                                <li><strong>Outcome:</strong> Profit/Loss in pips and currency.</li>
+                                <li><strong>Analysis:</strong> Did you follow your plan? How was your mental state?</li>
+                            </ul>
+                            
+                            <p>Consistent, honest record-keeping is the fastest path to profitability.</p>
+                        </div>` 
+                }
+            ];
+            for(const l of lessons) await addDoc(colRef, l);
+        }
+
         window.renderTools(); window.renderSignals();
     </script>
-
+    
     <script>
-        // --- NON-MODULAR UI UTILS ---
-        function refreshStrength() {
-            const container = document.getElementById('strength-container');
-            if(!container) return; container.innerHTML = '';
-            ['USD', 'EUR', 'GBP', 'JPY', 'AUD'].forEach(curr => {
-                const s = Math.floor(Math.random() * 80) + 10;
-                const row = document.createElement('div');
-                row.className = "flex items-center gap-3";
-                row.innerHTML = `<span class="text-xs font-bold text-gray-400 w-8">${curr}</span><div class="flex-grow h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 strength-bar-fill" style="width: ${s}%"></div></div><span class="text-xs text-gray-500 w-6">${s}</span>`;
-                container.appendChild(row);
+        function refreshStrength() { const container = document.getElementById('strength-container'); if(!container) return; container.innerHTML = ''; ['USD', 'EUR', 'GBP', 'JPY', 'AUD'].forEach(curr => { const s = Math.floor(Math.random() * 80) + 10; const row = document.createElement('div'); row.className = "flex items-center gap-3"; row.innerHTML = `<span class="text-xs font-bold text-gray-400 w-8">${curr}</span><div class="flex-grow h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 strength-bar-fill" style="width: ${s}%"></div></div><span class="text-xs text-gray-500 w-6">${s}</span>`; container.appendChild(row); }); } setTimeout(refreshStrength, 500);
+        function switchTab(tabId) { ['calc', 'ai', 'signals'].forEach(t => { const content = document.getElementById('content-' + t); const tab = document.getElementById('tab-' + t); if (content) content.classList.add('hidden'); if (tab) tab.className = "flex-1 py-4 text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors uppercase tracking-widest"; }); document.getElementById('content-' + tabId).classList.remove('hidden'); document.getElementById('tab-' + tabId).className = "flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all"; if (tabId === 'ai') { const h = document.getElementById('ai-chat-history'); if(h) setTimeout(() => h.scrollTop = h.scrollHeight, 50); } }
+        
+        function switchMarketTab(tabId) {
+            ['calendar', 'news'].forEach(t => {
+                const content = document.getElementById('market-' + t);
+                const tab = document.getElementById('mtab-' + t);
+                if (content) content.classList.add('hidden');
+                if (tab) tab.className = "flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest transition-all";
             });
+            const activeContent = document.getElementById('market-' + tabId);
+            const activeTab = document.getElementById('mtab-' + tabId);
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (activeTab) activeTab.className = "flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all";
         }
-        setTimeout(refreshStrength, 500);
-
-        function switchTab(tabId) {
-            ['calc', 'ai', 'signals'].forEach(t => {
-                const c = document.getElementById('content-' + t);
-                const b = document.getElementById('tab-' + t);
-                if (c) c.classList.add('hidden');
-                if (b) b.className = "flex-1 py-4 text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors uppercase tracking-widest";
-            });
-            const active = document.getElementById('content-' + tabId);
-            const btn = document.getElementById('tab-' + tabId);
-            if (active) active.classList.remove('hidden');
-            if (btn) btn.className = "flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all";
-            if (tabId === 'ai') {
-                const h = document.getElementById('ai-chat-history');
-                if(h) h.scrollTop = h.scrollHeight;
-            }
-        }
-
-        const lessons = [
-            { id: 1, title: "Forex Basics 101", level: "Beginner", icon: "book-open", duration: "10m" },
-            { id: 2, title: "Market Structure", level: "Intermediate", icon: "activity", duration: "15m" },
-            { id: 3, title: "cTrader Automate", level: "Advanced", icon: "cpu", duration: "25m" }
-        ];
-
-        function renderAcademy() {
-            const grid = document.getElementById('academy-grid');
-            if(!grid) return; grid.innerHTML = '';
-            lessons.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "glass-card p-3 rounded-xl flex items-center justify-between group cursor-pointer hover:bg-gray-800/50 transition-colors";
-                card.onclick = () => window.openAcademy(item.id);
-                card.innerHTML = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-indigo-900/30 flex items-center justify-center text-indigo-400"><i data-lucide="${item.icon}" class="w-5 h-5"></i></div><div><h4 class="text-sm font-bold text-white group-hover:text-indigo-400">${item.title}</h4><p class="text-[10px] text-gray-500">${item.level} • ${item.duration}</p></div></div><i data-lucide="circle" class="w-4 h-4 text-gray-700"></i>`;
-                grid.appendChild(card);
-            });
-            lucide.createIcons();
-        }
-        renderAcademy();
 
         window.toggleMobileMenu = () => document.getElementById('mobile-menu').classList.toggle('hidden');
         window.toggleAdminModal = () => document.getElementById('admin-modal').classList.toggle('hidden');
         window.toggleAcademyModal = () => document.getElementById('academy-modal').classList.toggle('hidden');
-        
-        let slideIndex = 1;
-        const slides = {
-            1: `<h1>Stellar <span class="gradient-text">Academy</span></h1><p>Master technical analysis and algorithmic trading with our pro-level slide curriculum.</p>`,
-            2: `<h2>Risk Management</h2><p>Position sizing and percentage-based risk models are the foundation of trader longevity.</p>`
-        };
-        window.openAcademy = (id) => { slideIndex = 1; renderSlide(); toggleAcademyModal(); };
-        window.changeSlide = (d) => { slideIndex = Math.max(1, slideIndex + d); renderSlide(); };
-        function renderSlide() { const w = document.getElementById('slides-wrapper'); w.innerHTML = `<div class="slide-container active-slide">${slides[slideIndex] || slides[1]}</div>`; }
+        window.switchAdminTab = (id) => { ['tools', 'signals', 'bias', 'academy'].forEach(t => { document.getElementById('adm-content-' + t).classList.add('hidden'); document.getElementById('adm-tab-' + t).className = "flex-1 py-2 text-gray-500"; }); document.getElementById('adm-content-' + id).classList.remove('hidden'); document.getElementById('adm-tab-' + id).className = "flex-1 py-2 text-white border-b-2 border-indigo-500"; }
+        window.changeSlide = () => {}; 
 
         setInterval(() => {
-            const clock = document.getElementById('live-clock');
-            if(clock) clock.innerText = new Date().toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false }) + " UTC";
-            const container = document.getElementById('session-container');
-            if(container && container.innerHTML === '') {
-                const now = new Date();
-                const utcTime = now.getUTCHours() + (now.getUTCMinutes() / 60);
-                [{name:'Tokyo', s:0, e:9}, {name:'London', s:7, e:16}, {name:'New York', s:12, e:21}].forEach(s => {
-                    let isOpen = (utcTime >= s.s && utcTime < s.e);
-                    const div = document.createElement('div');
-                    div.className = "mb-4";
-                    div.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-gray-400">${s.name}</span><span class="text-[10px] px-1.5 rounded ${isOpen ? 'bg-green-500/20 text-green-400' : 'bg-gray-800 text-gray-600'}">${isOpen ? 'OPEN' : 'CLOSED'}</span></div><div class="h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${isOpen ? '100%' : '0%'}"></div></div>`;
-                    container.appendChild(div);
-                });
+            const clock = document.getElementById('live-clock'); if(clock) clock.innerText = new Date().toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false }) + " UTC";
+            const container = document.getElementById('session-container'); if(container && container.innerHTML === '') {
+                const now = new Date(); const utcTime = now.getUTCHours() + (now.getUTCMinutes() / 60); [{name:'Tokyo', s:0, e:9}, {name:'London', s:7, e:16}, {name:'New York', s:12, e:21}].forEach(s => { let isOpen = (utcTime >= s.s && utcTime < s.e); const div = document.createElement('div'); div.className = "mb-4"; div.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-gray-400">${s.name}</span><span class="text-[10px] px-1.5 rounded ${isOpen ? 'bg-green-500/20 text-green-400' : 'bg-gray-800 text-gray-600'}">${isOpen ? 'OPEN' : 'CLOSED'}</span></div><div class="h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${isOpen ? '100%' : '0%'}"></div></div>`; container.appendChild(div); });
             }
         }, 1000);
         lucide.createIcons();

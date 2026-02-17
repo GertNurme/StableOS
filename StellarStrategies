@@ -471,77 +471,219 @@
         </div>
     </footer>
     
-    <!-- Admin Modal (Restored) -->
+    <!-- ACADEMY MODAL (Restored) -->
+    <div id="academy-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="toggleAcademyModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-3xl max-h-[85vh] bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-white/5 flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b border-gray-800 bg-gray-900/50 flex-shrink-0">
+                    <h3 id="modal-title" class="text-xl font-bold text-white font-heading">Lesson Title</h3>
+                    <button onclick="toggleAcademyModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div id="modal-content" class="p-8 overflow-y-auto custom-scrollbar article-content text-gray-300">
+                    <!-- Content injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STRATEGY WIZARD MODAL (Restored) -->
+    <div id="strategy-wizard-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="closeWizard()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-lg bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-indigo-500/30 flex flex-col">
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
+                            <i data-lucide="wand-2" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white font-heading uppercase tracking-wider">Tool Matcher</h3>
+                    </div>
+                    <button onclick="closeWizard()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                
+                <!-- Wizard Content -->
+                <div id="wizard-step-container" class="p-8 overflow-y-auto custom-scrollbar">
+                    <!-- Step 1 -->
+                    <div id="wizard-step-1" class="wizard-step">
+                        <h4 class="text-xl text-white font-bold mb-2">What is your trading style?</h4>
+                        <p class="text-sm text-gray-500 mb-6">Select the duration that best fits your typical trade.</p>
+                        <div class="space-y-3">
+                            <button onclick="selectWizardOption('style', 'scalper')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-indigo-900/30 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><i data-lucide="zap" class="w-5 h-5"></i></div>
+                                <div><div class="font-bold text-white">Scalper</div><div class="text-xs text-gray-500">Fast paced, minutes to hours.</div></div>
+                            </button>
+                            <button onclick="selectWizardOption('style', 'day')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-teal-900/30 text-teal-400 group-hover:bg-teal-600 group-hover:text-white transition-colors"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                                <div><div class="font-bold text-white">Day Trader</div><div class="text-xs text-gray-500">Intraday, close before market close.</div></div>
+                            </button>
+                            <button onclick="selectWizardOption('style', 'swing')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-purple-900/30 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors"><i data-lucide="calendar" class="w-5 h-5"></i></div>
+                                <div><div class="font-bold text-white">Swing Trader</div><div class="text-xs text-gray-500">Multi-day, capturing larger moves.</div></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div id="wizard-step-2" class="wizard-step hidden">
+                        <h4 class="text-xl text-white font-bold mb-2">Primary Asset Class?</h4>
+                        <p class="text-sm text-gray-500 mb-6">What markets do you analyze most often?</p>
+                        <div class="space-y-3">
+                            <button onclick="selectWizardOption('asset', 'forex')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-green-900/30 text-green-400 group-hover:bg-green-600 group-hover:text-white transition-colors"><i data-lucide="banknote" class="w-5 h-5"></i></div>
+                                <div class="font-bold text-white">Forex (Currencies)</div>
+                            </button>
+                            <button onclick="selectWizardOption('asset', 'indices')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-blue-900/30 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></div>
+                                <div class="font-bold text-white">Indices (US30, NAS100)</div>
+                            </button>
+                            <button onclick="selectWizardOption('asset', 'crypto')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-orange-900/30 text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-colors"><i data-lucide="bitcoin" class="w-5 h-5"></i></div>
+                                <div class="font-bold text-white">Crypto & Commodities</div>
+                            </button>
+                        </div>
+                        <button onclick="resetWizard()" class="mt-4 text-xs text-gray-500 hover:text-white underline">Back to start</button>
+                    </div>
+
+                    <!-- Step 3: Result -->
+                    <div id="wizard-result" class="wizard-step hidden text-center">
+                        <div class="mb-6 flex justify-center">
+                            <div class="w-20 h-20 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                                <i data-lucide="check" class="w-10 h-10 text-indigo-400"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-2xl text-white font-bold mb-2">We Recommend</h4>
+                        <p class="text-sm text-gray-400 mb-6">Based on your trading style, this tool will maximize your edge.</p>
+                        
+                        <!-- Dynamic Result Card -->
+                        <div id="wizard-recommendation" class="bg-gray-800 rounded-xl p-4 border border-indigo-500/30 mb-6 text-left relative overflow-hidden">
+                            <!-- Content injected via JS -->
+                        </div>
+
+                        <div class="flex gap-3">
+                             <a id="wizard-link" href="#" target="_blank" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold uppercase tracking-widest text-xs transition-all">View Details</a>
+                             <button onclick="closeWizard()" class="px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-xs">Close</button>
+                        </div>
+                        <button onclick="resetWizard()" class="mt-4 text-xs text-gray-500 hover:text-white underline">Start Over</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ADMIN MODAL (Restored) -->
     <div id="admin-modal" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 modal-overlay" onclick="toggleAdminModal()"></div>
-        <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-stellar-dark border-l border-white/10 shadow-2xl flex flex-col p-8 overflow-y-auto">
-            <div class="flex justify-between items-center mb-8 text-white"><h2 class="text-2xl font-bold">Admin</h2><button onclick="toggleAdminModal()"><i data-lucide="x"></i></button></div>
-            <div id="adm-tabs" class="flex gap-4 border-b border-gray-800 mb-8 pb-1">
-                <button onclick="switchAdminTab('tools')" id="adm-tab-tools" class="flex-1 py-2 text-white border-b-2 border-indigo-500 font-bold">Tools</button>
-                <button onclick="switchAdminTab('signals')" id="adm-tab-signals" class="flex-1 py-2 text-gray-500">Signals</button>
-                <button onclick="switchAdminTab('academy')" id="adm-tab-academy" class="flex-1 py-2 text-gray-500">Academy</button>
-                <button onclick="switchAdminTab('bias')" id="adm-tab-bias" class="flex-1 py-2 text-gray-500">Outlook</button>
-            </div>
+        <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-stellar-dark border-l border-white/10 shadow-2xl flex flex-col overflow-hidden">
             
-            <div id="adm-content-tools" class="text-xs text-gray-500">
-                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
-                    <h3 class="text-sm font-bold text-white mb-3" id="form-title">Add / Edit Tool</h3>
-                    <input type="hidden" id="edit-doc-id">
-                    <div class="space-y-3">
-                        <input type="text" id="tool-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Title">
-                        <textarea id="tool-desc" rows="2" class="input-stellar w-full rounded p-2 text-sm" placeholder="Description"></textarea>
-                        <input type="text" id="tool-image" class="input-stellar w-full rounded p-2 text-sm" placeholder="Image URL (Optional)">
-                        <div class="flex gap-2">
-                            <select id="tool-category" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indicator">Indicator</option><option value="cbot">cBot</option></select>
-                            <select id="tool-color" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indigo">Indigo</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="blue">Blue</option></select>
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="text" id="tool-icon" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Icon (lucide)">
-                            <input type="text" id="tool-badge" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Badge">
-                        </div>
-                        <input type="text" id="tool-link" class="input-stellar w-full rounded p-2 text-sm" placeholder="Link URL">
-                        <div class="flex gap-2 pt-2"><button onclick="saveTool()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save</button><button onclick="resetForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button></div>
+            <!-- 1. LOGIN SCREEN (Visible by default) -->
+            <div id="admin-login-screen" class="flex flex-col h-full p-8 justify-center relative z-20 bg-stellar-dark">
+                <button onclick="toggleAdminModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+                
+                <div class="mb-10 text-center">
+                    <div class="w-16 h-16 bg-indigo-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/30">
+                        <i data-lucide="shield-lock" class="w-8 h-8 text-indigo-400"></i>
                     </div>
+                    <h2 class="text-2xl font-bold text-white font-heading">System Access</h2>
+                    <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest">Authorized Personnel Only</p>
                 </div>
-                <div id="admin-tool-list" class="space-y-2"></div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Operator ID</label>
+                        <input type="text" id="admin-id" class="input-stellar w-full rounded-lg p-3 text-sm border-gray-700 focus:border-indigo-500" placeholder="Enter ID">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Access Key</label>
+                        <input type="password" id="admin-key" class="input-stellar w-full rounded-lg p-3 text-sm border-gray-700 focus:border-indigo-500" placeholder="••••••••">
+                    </div>
+                    <button onclick="attemptAdminLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-900/20 mt-2">Authenticate</button>
+                    <p id="login-error" class="text-red-500 text-xs text-center mt-2 hidden">Access Denied: Invalid Credentials</p>
+                </div>
+                
+                <div class="mt-auto text-center">
+                    <p class="text-[10px] text-gray-600">Stardust Syndicate OÜ • Secure Console v2.4</p>
+                </div>
             </div>
 
-            <div id="adm-content-signals" class="hidden text-xs text-gray-500">
-                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
-                    <h3 class="text-sm font-bold text-white mb-3">Post Signal</h3>
-                    <div class="space-y-3">
-                         <div class="flex gap-2"><input type="text" id="sig-pair" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Pair (e.g. GOLD)"><select id="sig-type" class="input-stellar w-24 rounded p-2 text-sm"><option value="BUY">BUY</option><option value="SELL">SELL</option></select></div>
-                         <div class="flex gap-2"><input type="text" id="sig-entry" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Entry"><input type="text" id="sig-sl" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="SL"><input type="text" id="sig-tp" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="TP"></div>
-                         <button onclick="postSignal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Broadcast</button>
+            <!-- 2. DASHBOARD CONTENT (Hidden until login) -->
+            <div id="admin-dashboard-content" class="flex flex-col h-full p-8 overflow-y-auto hidden">
+                <div class="flex justify-between items-center mb-8 text-white flex-shrink-0">
+                    <h2 class="text-2xl font-bold flex items-center gap-2"><i data-lucide="layout-grid" class="text-indigo-500 w-6 h-6"></i> Console</h2>
+                    <div class="flex gap-4">
+                        <button onclick="adminLogout()" class="text-xs text-red-400 hover:text-red-300 font-bold uppercase tracking-wider">Logout</button>
+                        <button onclick="toggleAdminModal()"><i data-lucide="x"></i></button>
                     </div>
                 </div>
-                <div id="admin-signal-list" class="space-y-2"></div>
-            </div>
 
-            <div id="adm-content-academy" class="hidden text-xs text-gray-500">
-                 <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
-                    <h3 class="text-sm font-bold text-white mb-3" id="acad-form-title">Add Academy Page</h3>
-                    <input type="hidden" id="edit-acad-id">
-                    <div class="space-y-3">
-                        <input type="text" id="acad-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Page Title (e.g. Forex Basics)">
-                        <input type="text" id="acad-desc" class="input-stellar w-full rounded p-2 text-sm" placeholder="Short Description">
-                        <input type="text" id="acad-icon" class="input-stellar w-full rounded p-2 text-sm" placeholder="Icon Name (lucide)">
-                        <label class="block text-gray-400 mt-2">Content HTML</label>
-                        <textarea id="acad-content" rows="10" class="input-stellar w-full rounded p-2 text-sm font-mono" placeholder="<h2>My Article Title</h2><p>Content goes here...</p>"></textarea>
-                        <div class="flex gap-2 pt-2">
-                            <button onclick="saveLesson()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save Page</button>
-                            <button onclick="resetAcadForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button>
+                <div id="adm-tabs" class="flex gap-4 border-b border-gray-800 mb-8 pb-1 flex-shrink-0">
+                    <button onclick="switchAdminTab('tools')" id="adm-tab-tools" class="flex-1 py-2 text-white border-b-2 border-indigo-500 font-bold transition-all">Tools</button>
+                    <button onclick="switchAdminTab('signals')" id="adm-tab-signals" class="flex-1 py-2 text-gray-500 hover:text-gray-300 transition-all">Signals</button>
+                    <button onclick="switchAdminTab('academy')" id="adm-tab-academy" class="flex-1 py-2 text-gray-500 hover:text-gray-300 transition-all">Academy</button>
+                    <button onclick="switchAdminTab('bias')" id="adm-tab-bias" class="flex-1 py-2 text-gray-500 hover:text-gray-300 transition-all">Outlook</button>
+                </div>
+                
+                <div id="adm-content-tools" class="text-xs text-gray-500">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3" id="form-title">Add / Edit Tool</h3>
+                        <input type="hidden" id="edit-doc-id">
+                        <div class="space-y-3">
+                            <input type="text" id="tool-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Title">
+                            <textarea id="tool-desc" rows="2" class="input-stellar w-full rounded p-2 text-sm" placeholder="Description"></textarea>
+                            <input type="text" id="tool-image" class="input-stellar w-full rounded p-2 text-sm" placeholder="Image URL (Optional)">
+                            <div class="flex gap-2">
+                                <select id="tool-category" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indicator">Indicator</option><option value="cbot">cBot</option></select>
+                                <select id="tool-color" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indigo">Indigo</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="blue">Blue</option></select>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="tool-icon" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Icon (lucide)">
+                                <input type="text" id="tool-badge" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Badge">
+                            </div>
+                            <input type="text" id="tool-link" class="input-stellar w-full rounded p-2 text-sm" placeholder="Link URL">
+                            <div class="flex gap-2 pt-2"><button onclick="saveTool()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save</button><button onclick="resetForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button></div>
                         </div>
                     </div>
+                    <div id="admin-tool-list" class="space-y-2"></div>
                 </div>
-                <div id="admin-academy-list" class="space-y-2"></div>
-            </div>
 
-            <div id="adm-content-bias" class="hidden text-xs text-gray-500">
-                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
-                    <h3 class="text-sm font-bold text-white mb-3">Daily Outlook</h3>
-                    <textarea id="bias-text" rows="8" class="input-stellar w-full rounded-lg p-3 text-sm mb-3" placeholder="Enter market commentary..."></textarea>
-                    <button onclick="saveBias()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-colors">Publish Update</button>
+                <div id="adm-content-signals" class="hidden text-xs text-gray-500">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3">Post Signal</h3>
+                        <div class="space-y-3">
+                             <div class="flex gap-2"><input type="text" id="sig-pair" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Pair (e.g. GOLD)"><select id="sig-type" class="input-stellar w-24 rounded p-2 text-sm"><option value="BUY">BUY</option><option value="SELL">SELL</option></select></div>
+                             <div class="flex gap-2"><input type="text" id="sig-entry" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Entry"><input type="text" id="sig-sl" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="SL"><input type="text" id="sig-tp" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="TP"></div>
+                             <button onclick="postSignal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Broadcast</button>
+                        </div>
+                    </div>
+                    <div id="admin-signal-list" class="space-y-2"></div>
+                </div>
+
+                <div id="adm-content-academy" class="hidden text-xs text-gray-500">
+                     <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3" id="acad-form-title">Add Academy Page</h3>
+                        <input type="hidden" id="edit-acad-id">
+                        <div class="space-y-3">
+                            <input type="text" id="acad-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Page Title (e.g. Forex Basics)">
+                            <input type="text" id="acad-desc" class="input-stellar w-full rounded p-2 text-sm" placeholder="Short Description">
+                            <input type="text" id="acad-icon" class="input-stellar w-full rounded p-2 text-sm" placeholder="Icon Name (lucide)">
+                            <label class="block text-gray-400 mt-2">Content HTML</label>
+                            <textarea id="acad-content" rows="10" class="input-stellar w-full rounded p-2 text-sm font-mono" placeholder="<h2>My Article Title</h2><p>Content goes here...</p>"></textarea>
+                            <div class="flex gap-2 pt-2">
+                                <button onclick="saveLesson()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save Page</button>
+                                <button onclick="resetAcadForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="admin-academy-list" class="space-y-2"></div>
+                </div>
+
+                <div id="adm-content-bias" class="hidden text-xs text-gray-500">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3">Daily Outlook</h3>
+                        <textarea id="bias-text" rows="8" class="input-stellar w-full rounded-lg p-3 text-sm mb-3" placeholder="Enter market commentary..."></textarea>
+                        <button onclick="saveBias()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-colors">Publish Update</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -572,12 +714,14 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Moved apiKey to the top for better visibility and injection reliability
+        const apiKey = "AIzaSyBt8NRtRlqUMe-TP-YEXQ22XJR020wL8DY";
+
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const apiKey = ""; 
 
         let globalTools = []; let globalSignals = []; let globalAcademy = []; let currentUser = null;
 
@@ -615,13 +759,59 @@
 
         // AI Helper
         async function callGemini(prompt, systemInstruction) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            // SIMULATION MODE: If no API Key is present, return realistic mock responses
+            if (!apiKey || apiKey === "") {
+                // ... existing simulation code ...
+                // Simulate network delay (thinking time)
+                await new Promise(r => setTimeout(r, 1200));
+                
+                const p = prompt.toLowerCase();
+                
+                // Mock Responses based on keywords
+                if (p.includes('hello') || p.includes('hi') || p.includes('hey')) {
+                    return "Greetings, Operator. I am Stellar AI. Systems are nominal. Ready to analyze market structure and order flow.";
+                }
+                if (p.includes('gold') || p.includes('xau')) {
+                    return "XAUUSD Analysis: Price is currently testing a key H4 supply zone. I am detecting a potential liquidity sweep of the Asian Highs. Watch for a rejection candle before looking for shorts.";
+                }
+                if (p.includes('eur') || p.includes('usd')) {
+                    return "EURUSD is consolidating. Institutional order flow remains bullish above 1.0850. Wait for a displacement above the current range for a valid entry.";
+                }
+                if (p.includes('btc') || p.includes('crypto') || p.includes('bitcoin')) {
+                    return "Bitcoin is showing divergence on the 1H timeframe. Large buy orders detected at the 64k support level. We may see a retest of the weekly open.";
+                }
+                if (p.includes('risk') || p.includes('money')) {
+                    return "Risk Protocol: Never risk more than 1-2% of your equity per trade. A fixed fractional sizing model is recommended to preserve capital during drawdown periods.";
+                }
+                if (p.includes('trend') || p.includes('bias')) {
+                    return "Daily Bias: Neutral-Bullish. Price has broken structure to the upside on the 4H chart, leaving a Fair Value Gap (FVG) below that may act as a magnet.";
+                }
+                if (p.includes('indicator') || p.includes('tool')) {
+                    return "Indicators lag price action. I recommend focusing on raw market structure (Highs/Lows) and Volume first. Our 'Market Session Ultimate' tool can help frame your charts correctly.";
+                }
+                
+                return "I am currently in Simulation Mode. I can discuss Market Structure, Gold, EURUSD, Crypto, or Risk Management. Try asking me about 'Gold trend' or 'Risk advice'.";
+            }
+
+            // FIXED: Updated to 'gemini-2.0-flash-exp' to resolve 404 Model Not Found errors
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemInstruction }] } };
             try {
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                
+                if (!response.ok) {
+                    console.error("Gemini API Error:", response.status);
+                    if (response.status === 401) return "Stellar AI Error: Unauthorized Access (Invalid Key).";
+                    if (response.status === 503) return "Stellar AI: Systems overloaded, please try again.";
+                    return `System Busy (Code ${response.status})`;
+                }
+
                 const data = await response.json();
                 return data.candidates?.[0]?.content?.parts?.[0]?.text || "Communication timeout.";
-            } catch (error) { return "Connection Error."; }
+            } catch (error) { 
+                console.error("Gemini Connection Error:", error);
+                return "Connection Error."; 
+            }
         }
 
         // --- GLOBAL EXPORTS ---
@@ -917,6 +1107,32 @@
                 document.getElementById('academy-modal').classList.remove('hidden');
             }
         };
+        
+        // --- ADMIN AUTH LOGIC ---
+        window.attemptAdminLogin = () => {
+            const id = document.getElementById('admin-id').value;
+            const key = document.getElementById('admin-key').value;
+            const err = document.getElementById('login-error');
+            
+            // DEMO CREDENTIALS CHECK
+            if (id === 'admin' && key === 'stellar') {
+                err.classList.add('hidden');
+                document.getElementById('admin-login-screen').classList.add('hidden');
+                document.getElementById('admin-dashboard-content').classList.remove('hidden');
+                
+                // Clear fields for security
+                document.getElementById('admin-id').value = '';
+                document.getElementById('admin-key').value = '';
+            } else {
+                err.classList.remove('hidden');
+            }
+        };
+
+        window.adminLogout = () => {
+            document.getElementById('admin-dashboard-content').classList.add('hidden');
+            document.getElementById('admin-login-screen').classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+        };
 
         // --- ADMIN FUNCTIONS ---
         window.saveTool = async () => { if (!currentUser) return; const title = document.getElementById('tool-title').value; const desc = document.getElementById('tool-desc').value; const category = document.getElementById('tool-category').value; const color = document.getElementById('tool-color').value; const icon = document.getElementById('tool-icon').value || 'box'; const imageUrl = document.getElementById('tool-image').value || ''; const badge = document.getElementById('tool-badge').value; const link = document.getElementById('tool-link').value || '#'; const editId = document.getElementById('edit-doc-id').value; if (!title) return alert("Title required"); const data = { title, description: desc, category, color, icon, imageUrl, badge, link }; const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools'); try { if (editId) await updateDoc(doc(colRef, editId), data); else await addDoc(colRef, data); window.resetForm(); } catch (e) { console.error(e); } };
@@ -969,6 +1185,24 @@
         };
         
         window.saveBias = async () => { if(!currentUser) return; const text = document.getElementById('bias-text').value; try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_bias', 'current'), { text, updatedAt: new Date() }); } catch(e) { console.error(e); } }
+
+        // --- RISK CALCULATOR LOGIC (Restored) ---
+        window.calculateRisk = (e) => {
+            e.preventDefault();
+            const balance = parseFloat(document.getElementById('balance').value);
+            const risk = parseFloat(document.getElementById('risk').value);
+            const pips = parseFloat(document.getElementById('pips').value);
+            
+            if (isNaN(balance) || isNaN(risk) || isNaN(pips) || pips === 0) return;
+            
+            // Calculation: Risk Amount / (Stop Loss * Pip Value)
+            // Assuming Standard Lot ($10/pip) for major pairs
+            const riskAmount = balance * (risk / 100);
+            const lots = riskAmount / (pips * 10);
+            
+            document.getElementById('lot-result').innerText = lots.toFixed(2);
+            document.getElementById('result-box').classList.remove('hidden');
+        };
 
         async function seedDatabase() {
             const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools');

@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Strategies | Pro Trader Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        stellar: {
+                            dark: '#0B0C15',
+                            card: '#161824',
+                            accent: '#6366F1',
+                            glow: '#818CF8',
+                            success: '#10B981',
+                            danger: '#EF4444',
+                            warning: '#F59E0B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Global Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0B0C15; }
+        ::-webkit-scrollbar-thumb { background: #6366F1; border-radius: 3px; } /* High contrast thumb */
+        ::-webkit-scrollbar-thumb:hover { background: #818CF8; }
+
+        /* Force Visible Scrollbar for Chat & Lists */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #6366F1 #111827; /* Firefox High Contrast */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            display: block; /* Force display */
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6366F1; 
+            border-radius: 4px;
+            border: 1px solid #111827;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #818CF8;
+        }
+        
+        #ai-chat-history::-webkit-scrollbar { width: 6px; }
+        #ai-chat-history::-webkit-scrollbar-track { background: rgba(17, 24, 39, 0.5); }
+        #ai-chat-history::-webkit-scrollbar-thumb { background: #6366F1; border-radius: 4px; }
+
+        .glass-card {
+            background: rgba(22, 24, 36, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth hover transition base */
+        }
+        
+        /* HOVER EFFECT: FLOATING PREVIEW */
+        .glass-card.product-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #6366F1;
+            box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.3);
+            z-index: 50; /* Ensure it floats above others */
+        }
+
+        .input-stellar {
+            background: #11131F;
+            border: 1px solid #374151;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-stellar:focus {
+            border-color: #6366F1; outline: none; box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
+        }
+
+        .strength-bar-fill { transition: width 1s ease-in-out; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); }
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        .bubble { word-break: break-word; overflow-wrap: break-word; }
+        .aspect-video { aspect-ratio: 16 / 9; }
+        
+        /* Article Content Styling for Academy Modal */
+        .article-content h1 { font-family: 'Outfit'; font-size: 2rem; font-weight: 700; color: white; margin-bottom: 1.5rem; border-bottom: 1px solid #374151; padding-bottom: 0.5rem; }
+        .article-content h2 { font-family: 'Outfit'; font-size: 1.5rem; font-weight: 600; color: #818CF8; margin-top: 2rem; margin-bottom: 0.75rem; }
+        .article-content h3 { font-family: 'Outfit'; font-size: 1.25rem; font-weight: 600; color: #C084FC; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .article-content p { color: #9CA3AF; line-height: 1.7; margin-bottom: 1rem; font-size: 1rem; }
+        .article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #D1D5DB; }
+        .article-content li { margin-bottom: 0.5rem; }
+        .article-content strong { color: white; font-weight: 600; }
+        .article-content .highlight { background: rgba(99, 102, 241, 0.1); border-left: 3px solid #6366F1; padding: 1rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body class="bg-stellar-dark text-gray-300 font-sans antialiased flex flex-col min-h-screen">
+
+    <!-- TradingView Ticker -->
+    <div class="tradingview-widget-container sticky top-0 z-[60] h-[26px]">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+        "symbols": [
+            { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+            { "proName": "FOREXCOM:NSXUSD", "title": "US 100" },
+            { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+            { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
+            { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" },
+            { "proName": "FX_IDC:USDJPY", "title": "USD/JPY" },
+            { "proName": "FX_IDC:XAUUSD", "title": "Gold" }
+        ],
+        "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "displayMode": "adaptive", "locale": "en"
+        }
+        </script>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 top-[46px] bg-stellar-dark/80 backdrop-blur-md border-b border-white/5" id="navbar">
+        <div class="max-w-[1600px] mx-auto px-6">
+            <div class="flex justify-between items-center h-16">
+                <a href="#" class="flex items-center space-x-2 group">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                        <i data-lucide="zap" class="text-white w-5 h-5"></i>
+                    </div>
+                    <span class="font-heading font-bold text-xl text-white tracking-wide">STELLAR<span class="text-indigo-400">STRATEGIES</span></span>
+                </a>
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="#dashboard" class="text-sm font-medium hover:text-white transition-colors">Terminal</a>
+                    <a href="#catalog" class="text-sm font-medium hover:text-white transition-colors">Tools</a>
+                    <a href="#learn" class="text-sm font-medium hover:text-white transition-colors">Academy</a>
+                    <a href="mailto:info@stellarstrategies.ee" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20">Contact Us</a>
+                </div>
+                <button class="lg:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="pt-32 pb-10 px-4 md:px-6 max-w-[1800px] mx-auto min-h-screen">
+        
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-heading font-bold text-white flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="text-indigo-500"></i> Market Terminal
+                </h1>
+                <p class="text-gray-500 text-xs mt-1">Real-time trading environment • Tallinn, Estonia</p>
+            </div>
+            <div id="live-clock" class="text-indigo-400 font-mono text-sm font-bold bg-indigo-900/20 px-3 py-1.5 rounded border border-indigo-500/30">
+                --:--:-- UTC
+            </div>
+        </div>
+
+        <!-- FEATURED TOOL BANNER -->
+        <div class="glass-card rounded-xl p-6 md:p-8 mb-8 border border-indigo-500/30 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-r from-indigo-900/40 via-purple-900/10 to-transparent"></div>
+            <!-- Decorative Glow -->
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="flex-1 text-center md:text-left space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold uppercase tracking-widest">
+                        <i data-lucide="star" class="w-3 h-3"></i> Featured Tool
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-heading font-bold text-white leading-tight">
+                        Market Session <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Ultimate</span>
+                    </h2>
+                    <p class="text-gray-400 text-sm max-w-xl leading-relaxed mx-auto md:mx-0">
+                        Stop guessing the market open. Automatically visualize trading sessions, opening ranges, and key institutional levels directly on your cTrader charts.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start pt-2">
+                        <a href="https://ctrader.com/products/894" target="_blank" class="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 hover:-translate-y-0.5">
+                            Get Access Now <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                        <button onclick="document.getElementById('catalog').scrollIntoView({behavior: 'smooth'})" class="px-6 py-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 text-white text-xs font-bold uppercase tracking-widest transition-all border border-gray-700 hover:border-gray-600 flex items-center justify-center gap-2">
+                            View All Tools
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full md:w-[420px] aspect-video rounded-xl bg-gray-900/50 border border-gray-700/50 overflow-hidden relative shadow-2xl group-hover:shadow-indigo-500/10 transition-all">
+                     <img src="https://market-prod-23f4d22-e289.s3.amazonaws.com/c6ab1a32-7da1-4d09-813c-75d33b8800b2_Market Session Ultimate 2.png" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" alt="Market Session Ultimate">
+                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
+                     <div class="absolute bottom-3 left-3 flex gap-2">
+                         <span class="px-2 py-1 rounded bg-black/60 border border-white/10 text-[10px] font-bold text-white backdrop-blur-sm">v3.0 Updated</span>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="glass-card rounded-xl p-5 border-l-4 border-l-indigo-500 flex flex-col h-[320px]">
+                <h3 class="font-bold text-white flex items-center gap-2 text-sm uppercase tracking-wider mb-4"><i data-lucide="globe" class="w-4 h-4 text-indigo-400"></i> Sessions</h3>
+                <div id="session-container" class="space-y-4 overflow-y-auto pr-1 custom-scrollbar"></div>
+            </div>
+            <div class="glass-card rounded-xl p-5 border-l-4 border-l-teal-500 flex flex-col h-[320px]">
+                <div class="flex justify-between items-center mb-4 uppercase text-sm tracking-wider">
+                    <h3 class="font-bold text-white">Strength Meter</h3>
+                    <button onclick="refreshStrength()" class="text-gray-500 hover:text-white"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                </div>
+                <div class="space-y-3 flex-grow" id="strength-container"></div>
+            </div>
+            <div class="glass-card rounded-xl p-5 border-l-4 border-l-purple-500 h-[320px] relative overflow-hidden flex flex-col">
+                <h3 class="font-bold text-white text-sm uppercase tracking-wider mb-4">Daily Outlook</h3>
+                <div id="daily-bias-content" class="text-sm text-gray-400 leading-relaxed overflow-y-auto pr-1 custom-scrollbar">No daily outlook published yet. Check back during London open.</div>
+                <div class="mt-auto pt-4 border-t border-gray-700/50 flex justify-between items-center text-[10px] text-gray-500">
+                    <span>Stellar Strategies Analysts</span>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-0.5 rounded bg-green-500/10 text-green-500 border border-green-500/20">Bullish</span>
+                        <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-500">Neutral</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Market Intelligence Hub -->
+            <div class="lg:col-span-2 glass-card rounded-xl flex flex-col h-[680px] overflow-hidden border border-gray-800">
+                <div class="flex border-b border-gray-800 flex-shrink-0">
+                    <button onclick="switchMarketTab('calendar')" id="mtab-calendar" class="flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all">Economic Calendar</button>
+                    <button onclick="switchMarketTab('news')" id="mtab-news" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest transition-all">Live News</button>
+                </div>
+                <div id="market-calendar" class="flex-grow h-full bg-stellar-dark/30">
+                    <div class="tradingview-widget-container h-full">
+                        <div class="tradingview-widget-container__widget h-full"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                        { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "en", "importanceFilter": "-1,0,1", "countryFilter": "us,eu,gb,jp,au,ca,ch,nz" }
+                        </script>
+                    </div>
+                </div>
+                <div id="market-news" class="flex-grow h-full bg-stellar-dark/30 hidden">
+                    <div class="tradingview-widget-container h-full">
+                        <div class="tradingview-widget-container__widget h-full"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                        { "feedMode": "market", "market": "forex", "colorTheme": "dark", "isTransparent": true, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "en" }
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabbed Utility Card (AI Messenger Fixed Height) -->
+            <div class="glass-card rounded-xl flex flex-col h-[680px] overflow-hidden">
+                <div class="flex border-b border-gray-800 flex-shrink-0">
+                    <button onclick="switchTab('signals')" id="tab-signals" class="flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all">Signals</button>
+                    <button onclick="switchTab('calc')" id="tab-calc" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest transition-all">Risk</button>
+                    <button onclick="switchTab('ai')" id="tab-ai" class="flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-center gap-1 transition-all">AI <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i></button>
+                </div>
+
+                <!-- Signals Tab (Expanded Widget) -->
+                <div id="content-signals" class="flex-grow flex flex-col min-h-0">
+                    <div class="bg-gray-900/50 border-b border-gray-800 p-2 flex flex-col gap-2">
+                        <div class="flex justify-between items-center px-2">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold">Analysis</span>
+                            <select id="tv-symbol-select" onchange="loadTradingViewSignal(this.value)" class="bg-gray-800 text-white text-[10px] rounded px-2 py-1 border border-gray-700 focus:outline-none">
+                                <option value="FX:XAUUSD">Gold (XAUUSD)</option>
+                                <option value="FX:EURUSD">EURUSD</option>
+                                <option value="BITSTAMP:BTCUSD">Bitcoin</option>
+                                <option value="FOREXCOM:NSXUSD">US 100</option>
+                            </select>
+                        </div>
+                        <div id="tv-technical-widget" class="h-[425px] w-full relative overflow-hidden bg-[#131722] p-2 pr-4 rounded-lg border border-gray-800"></div>
+                    </div>
+                    <div class="p-2 bg-indigo-900/20 border-y border-indigo-500/10 text-[10px] font-bold text-indigo-400 text-center uppercase tracking-widest">Analyst Live Calls</div>
+                    <div id="signals-list" class="flex-grow overflow-y-auto p-3 space-y-3 custom-scrollbar"></div>
+                </div>
+
+                <!-- Risk Tab -->
+                <div id="content-calc" class="p-6 flex-grow hidden flex-col">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-4 tracking-widest">Risk Management</h4>
+                    <form onsubmit="calculateRisk(event)" class="space-y-4">
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Account Balance</label>
+                            <input type="number" id="balance" class="input-stellar w-full rounded p-3 text-sm" placeholder="10000" value="10000">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Risk %</label>
+                                <input type="number" id="risk" class="input-stellar w-full rounded p-3 text-sm" placeholder="1.0" value="1.0" step="0.1">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Stop (Pips)</label>
+                                <input type="number" id="pips" class="input-stellar w-full rounded p-3 text-sm" placeholder="20" value="20">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-all">Calculate</button>
+                    </form>
+                    <div id="result-box" class="mt-6 hidden p-6 bg-green-900/10 border border-green-500/20 rounded-xl text-center">
+                         <div class="text-3xl font-bold text-white tracking-tighter"><span id="lot-result">0.00</span> <span class="text-sm font-medium text-gray-400 uppercase">Lots</span></div>
+                    </div>
+                </div>
+
+                <!-- AI Tab (FIXED MESSENGER WITH SCROLLBAR) -->
+                <!-- Changed 'h-full' to 'h-auto' (removed h-full) and 'flex-grow' to 'flex-1' to respect parent flex container and not push input off screen -->
+                <div id="content-ai" class="flex-1 hidden flex flex-col min-h-0 bg-stellar-dark/30 overflow-hidden relative">
+                    <div id="ai-chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0">
+                        <!-- Permanent Welcome Message -->
+                        <div class="flex gap-3 max-w-[85%] self-start flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                            </div>
+                            <div class="bg-gray-800 border border-gray-700/50 rounded-2xl rounded-tl-none p-3 text-gray-300 text-xs leading-relaxed shadow-lg bubble">
+                                Hello! I am Stellar AI, your professional trading assistant. Ask me anything about market structure, technical analysis, or our cTrader tools.
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Messenger Input -->
+                    <div class="p-4 border-t border-gray-800 bg-stellar-dark/50 flex-shrink-0">
+                        <div class="relative flex items-center gap-2 bg-gray-900 rounded-2xl px-4 py-2 border border-gray-700 focus-within:border-indigo-500/50 transition-all shadow-inner">
+                            <textarea id="ai-input" 
+                                class="bg-transparent text-white text-xs w-full focus:outline-none resize-none py-1 custom-scrollbar" 
+                                placeholder="Message Stellar AI..." 
+                                rows="1"
+                                onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); askStellarAI(); }"></textarea>
+                            <button onclick="askStellarAI()" class="text-indigo-500 hover:text-indigo-400 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tool Catalog -->
+        <div id="catalog" class="pt-16 mb-8 border-t border-gray-800">
+            <h2 class="text-3xl font-heading font-bold text-white text-center uppercase tracking-widest">Product Catalog</h2>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mt-10">
+                <div class="flex flex-wrap justify-center gap-2 bg-gray-900/50 p-1 rounded-full border border-gray-800">
+                    <button onclick="filterTools('all')" class="px-6 py-2 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-lg active-filter filter-btn" data-filter="all">ALL</button>
+                    <button onclick="filterTools('indicator')" class="px-6 py-2 rounded-full text-[10px] font-bold text-gray-400 filter-btn" data-filter="indicator">INDICATORS</button>
+                    <button onclick="filterTools('cbot')" class="px-6 py-2 rounded-full text-[10px] font-bold text-gray-400 filter-btn" data-filter="cbot">CBOTS</button>
+                    <button onclick="openWizard()" class="px-6 py-2 rounded-full text-[10px] font-bold text-indigo-300 border border-indigo-500/30 hover:bg-indigo-900/30 transition-colors flex items-center gap-2">Strategy Matcher <span class="text-base">🪄</span></button>
+                </div>
+                <div class="relative w-full md:w-80">
+                    <i data-lucide="search" class="absolute left-4 top-3 w-4 h-4 text-gray-500"></i>
+                    <input type="text" id="search-input" onkeyup="searchTools()" placeholder="Search products..." class="input-stellar w-full rounded-full py-3 pl-10 pr-6 text-xs">
+                </div>
+            </div>
+        </div>
+        <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-20"></div>
+
+        <!-- Academy Section -->
+        <section id="learn" class="pt-16 pb-20 border-t border-gray-800 relative">
+            <!-- Background Glow Effect for Academy -->
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-indigo-900/20 via-stellar-dark to-stellar-dark pointer-events-none"></div>
+            
+            <div class="relative z-10">
+                <div class="flex justify-between items-end mb-10 text-white">
+                    <div><h2 class="text-3xl font-heading font-bold uppercase tracking-widest">Stellar Academy</h2><p class="text-gray-500 text-sm">Professional trading resources & education.</p></div>
+                    <div class="text-xs text-gray-500 bg-gray-900 px-4 py-1.5 rounded-full border border-gray-800">Knowledge Base</div>
+                </div>
+                <!-- Dynamic Academy Grid -->
+                <div id="academy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+        </section>
+        
+        <!-- TRUST / PLATFORM STRIP (New Section) -->
+        <div class="py-12 border-t border-gray-800 bg-gray-900/30">
+            <div class="max-w-[1600px] mx-auto px-6 text-center">
+                <p class="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-6">Optimized for Institutional Standards</p>
+                <div class="flex flex-wrap justify-center gap-12 md:gap-20 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+                    <!-- Text-based Logos for Platforms -->
+                    <div class="flex items-center gap-2 group cursor-default">
+                        <div class="w-8 h-8 rounded bg-green-600 flex items-center justify-center text-white font-bold text-xs group-hover:bg-green-500 shadow-lg shadow-green-900/20">cT</div>
+                        <span class="text-xl font-heading font-bold text-white group-hover:text-green-400 transition-colors">cTrader</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 group cursor-default">
+                        <!-- IC Markets Green -->
+                        <span class="text-xl font-heading font-bold text-white group-hover:text-[#95C11F] transition-colors">IC Markets</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 group cursor-default">
+                        <!-- Pepperstone Red -->
+                        <span class="text-xl font-heading font-bold text-white group-hover:text-[#D91E18] transition-colors">Pepperstone</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 group cursor-default">
+                        <!-- FxPro Dark Red -->
+                        <span class="text-xl font-heading font-bold text-white group-hover:text-red-700 transition-colors">FxPro</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 group cursor-default">
+                         <!-- TopFX Blue -->
+                        <span class="text-xl font-heading font-bold text-white group-hover:text-blue-500 transition-colors">TopFX</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPANDED PRO FOOTER -->
+    <footer class="bg-[#05060a] pt-20 pb-10 border-t border-white/5 text-sm border-t border-indigo-900/20">
+        <div class="max-w-[1600px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <!-- Brand Column -->
+            <div class="col-span-1 md:col-span-1">
+                <a href="#" class="flex items-center space-x-2 mb-6">
+                    <div class="w-8 h-8 bg-indigo-900/50 border border-indigo-500/30 rounded-lg flex items-center justify-center">
+                        <i data-lucide="zap" class="text-indigo-400 w-4 h-4"></i>
+                    </div>
+                    <span class="font-heading font-bold text-lg text-white tracking-wide">STELLAR<span class="text-indigo-500">STRATEGIES</span></span>
+                </a>
+                <p class="text-gray-500 text-xs leading-relaxed mb-6">
+                    Professional algorithmic trading tools designed for precision, speed, and reliability. Automating your edge from Tallinn, Estonia.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-red-600 hover:text-white transition-all"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                </div>
+            </div>
+
+            <!-- Links Column -->
+            <div>
+                <h4 class="text-white font-bold uppercase tracking-widest text-xs mb-6">Platform</h4>
+                <ul class="space-y-4 text-gray-500 text-xs">
+                    <li><a href="#dashboard" class="hover:text-indigo-400 transition-colors">Terminal Dashboard</a></li>
+                    <li><a href="#catalog" class="hover:text-indigo-400 transition-colors">Indicator Store</a></li>
+                    <li><a href="#catalog" class="hover:text-indigo-400 transition-colors">cBot Automation</a></li>
+                    <li><a href="#learn" class="hover:text-indigo-400 transition-colors">Trading Academy</a></li>
+                </ul>
+            </div>
+
+            <!-- Support Column -->
+            <div>
+                <h4 class="text-white font-bold uppercase tracking-widest text-xs mb-6">Support</h4>
+                <ul class="space-y-4 text-gray-500 text-xs">
+                    <li><button onclick="openInfoModal('contact')" class="hover:text-indigo-400 transition-colors text-left">Contact Support</button></li>
+                    <li><button onclick="openInfoModal('docs')" class="hover:text-indigo-400 transition-colors text-left">Documentation</button></li>
+                    <!-- API Access Removed -->
+                    <li><button onclick="openInfoModal('custom')" class="hover:text-indigo-400 transition-colors text-left">Custom Development</button></li>
+                </ul>
+            </div>
+
+            <!-- Legal Column -->
+            <div>
+                <h4 class="text-white font-bold uppercase tracking-widest text-xs mb-6">Legal</h4>
+                <ul class="space-y-4 text-gray-500 text-xs">
+                    <li><button onclick="openInfoModal('privacy')" class="hover:text-indigo-400 transition-colors text-left">Privacy Policy</button></li>
+                    <li><button onclick="openInfoModal('terms')" class="hover:text-indigo-400 transition-colors text-left">Terms of Service</button></li>
+                    <li><button onclick="openInfoModal('risk')" class="hover:text-indigo-400 transition-colors text-left">Risk Disclosure</button></li>
+                    <li><button onclick="openInfoModal('refund')" class="hover:text-indigo-400 transition-colors text-left">Refund Policy</button></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-[1600px] mx-auto px-6 pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-gray-600 text-[10px]">&copy; 2026 Stardust Syndicate OÜ. All rights reserved.</div>
+            <button onclick="toggleAdminModal()" class="text-gray-700 hover:text-indigo-500 font-bold uppercase tracking-widest transition-all text-[10px] flex items-center gap-2">
+                <i data-lucide="lock" class="w-3 h-3"></i> Console Login
+            </button>
+        </div>
+    </footer>
+    
+    <!-- ACADEMY MODAL (Restored) -->
+    <div id="academy-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="toggleAcademyModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-3xl max-h-[85vh] bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-white/5 flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b border-gray-800 bg-gray-900/50 flex-shrink-0">
+                    <h3 id="modal-title" class="text-xl font-bold text-white font-heading">Lesson Title</h3>
+                    <button onclick="toggleAcademyModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div id="modal-content" class="p-8 overflow-y-auto custom-scrollbar article-content text-gray-300">
+                    <!-- Content injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STRATEGY WIZARD MODAL (Restored) -->
+    <div id="strategy-wizard-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="closeWizard()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-lg bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-indigo-500/30 flex flex-col">
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
+                            <i data-lucide="wand-2" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white font-heading uppercase tracking-wider">Tool Matcher</h3>
+                    </div>
+                    <button onclick="closeWizard()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                
+                <!-- Wizard Content -->
+                <div id="wizard-step-container" class="p-8 overflow-y-auto custom-scrollbar">
+                    <!-- Step 1 -->
+                    <div id="wizard-step-1" class="wizard-step">
+                        <h4 class="text-xl text-white font-bold mb-2">What is your trading style?</h4>
+                        <p class="text-sm text-gray-500 mb-6">Select the duration that best fits your typical trade.</p>
+                        <div class="space-y-3">
+                            <button onclick="selectWizardOption('style', 'scalper')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-indigo-900/30 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><i data-lucide="zap" class="w-5 h-5"></i></div>
+                                <div><div class="font-bold text-white">Scalper</div><div class="text-xs text-gray-500">Fast paced, minutes to hours.</div></div>
+                            </button>
+                            <button onclick="selectWizardOption('style', 'day')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-teal-900/30 text-teal-400 group-hover:bg-teal-600 group-hover:text-white transition-colors"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                                <div><div class="font-bold text-white">Day Trader</div><div class="text-xs text-gray-500">Intraday, close before market close.</div></div>
+                            </button>
+                            <button onclick="selectWizardOption('style', 'swing')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-purple-900/30 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors"><i data-lucide="calendar" class="w-5 h-5"></i></div>
+                                <div><div class="font-bold text-white">Swing Trader</div><div class="text-xs text-gray-500">Multi-day, capturing larger moves.</div></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div id="wizard-step-2" class="wizard-step hidden">
+                        <h4 class="text-xl text-white font-bold mb-2">Primary Asset Class?</h4>
+                        <p class="text-sm text-gray-500 mb-6">What markets do you analyze most often?</p>
+                        <div class="space-y-3">
+                            <button onclick="selectWizardOption('asset', 'forex')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-green-900/30 text-green-400 group-hover:bg-green-600 group-hover:text-white transition-colors"><i data-lucide="banknote" class="w-5 h-5"></i></div>
+                                <div class="font-bold text-white">Forex (Currencies)</div>
+                            </button>
+                            <button onclick="selectWizardOption('asset', 'indices')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-blue-900/30 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></div>
+                                <div class="font-bold text-white">Indices (US30, NAS100)</div>
+                            </button>
+                            <button onclick="selectWizardOption('asset', 'crypto')" class="w-full text-left p-4 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-indigo-500 hover:bg-gray-800 transition-all flex items-center gap-4 group">
+                                <div class="p-2 rounded bg-orange-900/30 text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-colors"><i data-lucide="bitcoin" class="w-5 h-5"></i></div>
+                                <div class="font-bold text-white">Crypto & Commodities</div>
+                            </button>
+                        </div>
+                        <button onclick="resetWizard()" class="mt-4 text-xs text-gray-500 hover:text-white underline">Back to start</button>
+                    </div>
+
+                    <!-- Step 3: Result -->
+                    <div id="wizard-result" class="wizard-step hidden text-center">
+                        <div class="mb-6 flex justify-center">
+                            <div class="w-20 h-20 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                                <i data-lucide="check" class="w-10 h-10 text-indigo-400"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-2xl text-white font-bold mb-2">We Recommend</h4>
+                        <p class="text-sm text-gray-400 mb-6">Based on your trading style, this tool will maximize your edge.</p>
+                        
+                        <!-- Dynamic Result Card -->
+                        <div id="wizard-recommendation" class="bg-gray-800 rounded-xl p-4 border border-indigo-500/30 mb-6 text-left relative overflow-hidden">
+                            <!-- Content injected via JS -->
+                        </div>
+
+                        <div class="flex gap-3">
+                             <a id="wizard-link" href="#" target="_blank" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold uppercase tracking-widest text-xs transition-all">View Details</a>
+                             <button onclick="closeWizard()" class="px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-xs">Close</button>
+                        </div>
+                        <button onclick="resetWizard()" class="mt-4 text-xs text-gray-500 hover:text-white underline">Start Over</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ADMIN MODAL (Restored) -->
+    <div id="admin-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="toggleAdminModal()"></div>
+        <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-stellar-dark border-l border-white/10 shadow-2xl flex flex-col overflow-hidden">
+            
+            <!-- 1. LOGIN SCREEN (Visible by default) -->
+            <div id="admin-login-screen" class="flex flex-col h-full p-8 justify-center relative z-20 bg-stellar-dark">
+                <button onclick="toggleAdminModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+                
+                <div class="mb-10 text-center">
+                    <div class="w-16 h-16 bg-indigo-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/30">
+                        <i data-lucide="shield-lock" class="w-8 h-8 text-indigo-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white font-heading">System Access</h2>
+                    <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest">Authorized Personnel Only</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Operator ID</label>
+                        <input type="text" id="admin-id" class="input-stellar w-full rounded-lg p-3 text-sm border-gray-700 focus:border-indigo-500" placeholder="Enter ID">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Access Key</label>
+                        <input type="password" id="admin-key" class="input-stellar w-full rounded-lg p-3 text-sm border-gray-700 focus:border-indigo-500" placeholder="••••••••">
+                    </div>
+                    <button onclick="attemptAdminLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-900/20 mt-2">Authenticate</button>
+                    <p id="login-error" class="text-red-500 text-xs text-center mt-2 hidden">Access Denied: Invalid Credentials</p>
+                </div>
+                
+                <div class="mt-auto text-center">
+                    <p class="text-[10px] text-gray-600">Stardust Syndicate OÜ • Secure Console v2.4</p>
+                </div>
+            </div>
+
+            <!-- 2. DASHBOARD CONTENT (Hidden until login) -->
+            <div id="admin-dashboard-content" class="flex flex-col h-full p-8 overflow-y-auto hidden">
+                <div class="flex justify-between items-center mb-8 text-white flex-shrink-0">
+                    <h2 class="text-2xl font-bold flex items-center gap-2"><i data-lucide="layout-grid" class="text-indigo-500 w-6 h-6"></i> Console</h2>
+                    <div class="flex gap-4">
+                        <button onclick="adminLogout()" class="text-xs text-red-400 hover:text-red-300 font-bold uppercase tracking-wider">Logout</button>
+                        <button onclick="toggleAdminModal()"><i data-lucide="x"></i></button>
+                    </div>
+                </div>
+
+                <div id="adm-tabs" class="flex gap-4 border-b border-gray-800 mb-8 pb-1 flex-shrink-0">
+                    <button onclick="switchAdminTab('tools')" id="adm-tab-tools" class="flex-1 py-2 text-white border-b-2 border-indigo-500 font-bold transition-all">Tools</button>
+                    <button onclick="switchAdminTab('signals')" id="adm-tab-signals" class="flex-1 py-2 text-gray-500 hover:text-gray-300 transition-all">Signals</button>
+                    <button onclick="switchAdminTab('academy')" id="adm-tab-academy" class="flex-1 py-2 text-gray-500 hover:text-gray-300 transition-all">Academy</button>
+                    <button onclick="switchAdminTab('bias')" id="adm-tab-bias" class="flex-1 py-2 text-gray-500 hover:text-gray-300 transition-all">Outlook</button>
+                </div>
+                
+                <div id="adm-content-tools" class="text-xs text-gray-500">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3" id="form-title">Add / Edit Tool</h3>
+                        <input type="hidden" id="edit-doc-id">
+                        <div class="space-y-3">
+                            <input type="text" id="tool-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Title">
+                            <textarea id="tool-desc" rows="2" class="input-stellar w-full rounded p-2 text-sm" placeholder="Description"></textarea>
+                            <input type="text" id="tool-image" class="input-stellar w-full rounded p-2 text-sm" placeholder="Image URL (Optional)">
+                            <div class="flex gap-2">
+                                <select id="tool-category" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indicator">Indicator</option><option value="cbot">cBot</option></select>
+                                <select id="tool-color" class="input-stellar flex-1 rounded p-2 text-sm"><option value="indigo">Indigo</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="blue">Blue</option></select>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="tool-icon" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Icon (lucide)">
+                                <input type="text" id="tool-badge" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Badge">
+                            </div>
+                            <input type="text" id="tool-link" class="input-stellar w-full rounded p-2 text-sm" placeholder="Link URL">
+                            <div class="flex gap-2 pt-2"><button onclick="saveTool()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save</button><button onclick="resetForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button></div>
+                        </div>
+                    </div>
+                    <div id="admin-tool-list" class="space-y-2"></div>
+                </div>
+
+                <div id="adm-content-signals" class="hidden text-xs text-gray-500">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3">Post Signal</h3>
+                        <div class="space-y-3">
+                             <div class="flex gap-2"><input type="text" id="sig-pair" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Pair (e.g. GOLD)"><select id="sig-type" class="input-stellar w-24 rounded p-2 text-sm"><option value="BUY">BUY</option><option value="SELL">SELL</option></select></div>
+                             <div class="flex gap-2"><input type="text" id="sig-entry" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="Entry"><input type="text" id="sig-sl" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="SL"><input type="text" id="sig-tp" class="input-stellar flex-1 rounded p-2 text-sm" placeholder="TP"></div>
+                             <button onclick="postSignal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Broadcast</button>
+                        </div>
+                    </div>
+                    <div id="admin-signal-list" class="space-y-2"></div>
+                </div>
+
+                <div id="adm-content-academy" class="hidden text-xs text-gray-500">
+                     <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3" id="acad-form-title">Add Academy Page</h3>
+                        <input type="hidden" id="edit-acad-id">
+                        <div class="space-y-3">
+                            <input type="text" id="acad-title" class="input-stellar w-full rounded p-2 text-sm" placeholder="Page Title (e.g. Forex Basics)">
+                            <input type="text" id="acad-desc" class="input-stellar w-full rounded p-2 text-sm" placeholder="Short Description">
+                            <input type="text" id="acad-icon" class="input-stellar w-full rounded p-2 text-sm" placeholder="Icon Name (lucide)">
+                            <label class="block text-gray-400 mt-2">Content HTML</label>
+                            <textarea id="acad-content" rows="10" class="input-stellar w-full rounded p-2 text-sm font-mono" placeholder="<h2>My Article Title</h2><p>Content goes here...</p>"></textarea>
+                            <div class="flex gap-2 pt-2">
+                                <button onclick="saveLesson()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded text-sm">Save Page</button>
+                                <button onclick="resetAcadForm()" class="px-3 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded text-sm">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="admin-academy-list" class="space-y-2"></div>
+                </div>
+
+                <div id="adm-content-bias" class="hidden text-xs text-gray-500">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6">
+                        <h3 class="text-sm font-bold text-white mb-3">Daily Outlook</h3>
+                        <textarea id="bias-text" rows="8" class="input-stellar w-full rounded-lg p-3 text-sm mb-3" placeholder="Enter market commentary..."></textarea>
+                        <button onclick="saveBias()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-colors">Publish Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info/Legal Modal -->
+    <div id="info-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="closeInfoModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-2xl max-h-[80vh] bg-stellar-dark rounded-2xl shadow-2xl overflow-hidden border border-gray-800 flex flex-col">
+                <div class="p-6 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center flex-shrink-0">
+                    <h3 id="info-modal-title" class="text-xl font-bold text-white font-heading uppercase tracking-wider">Information</h3>
+                    <button onclick="closeInfoModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div id="info-modal-content" class="p-8 overflow-y-auto custom-scrollbar text-gray-400 text-sm leading-relaxed">
+                    <!-- Dynamic Content -->
+                </div>
+                <div class="p-4 border-t border-gray-800 bg-gray-900/30 flex justify-end flex-shrink-0">
+                    <button onclick="closeInfoModal()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-all">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Moved apiKey to the top for better visibility and injection reliability
+        const apiKey = "AIzaSyBt8NRtRlqUMe-TP-YEXQ22XJR020wL8DY";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        let globalTools = []; let globalSignals = []; let globalAcademy = []; let currentUser = null;
+
+        const initAuth = async () => { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); }};
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user; if (!user) return;
+            
+            // Tools
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'tools'), (snapshot) => {
+                if (snapshot.empty && globalTools.length === 0) seedDatabase();
+                globalTools = []; 
+                snapshot.forEach((doc) => globalTools.push({ id: doc.id, ...doc.data() }));
+                window.renderTools(); window.renderAdminList();
+            });
+            // Signals
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'signals'), (snapshot) => {
+                globalSignals = []; snapshot.forEach((doc) => globalSignals.push({ id: doc.id, ...doc.data() }));
+                globalSignals.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+                window.renderSignals(); window.renderAdminSignalList();
+            });
+            // Academy
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'academy'), (snapshot) => {
+                if (snapshot.empty) seedAcademy();
+                globalAcademy = [];
+                snapshot.forEach((doc) => globalAcademy.push({ id: doc.id, ...doc.data() }));
+                window.renderAcademy(); window.renderAdminAcademyList();
+            });
+            // Bias
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'daily_bias', 'current'), (docSnap) => {
+                if (docSnap.exists()) window.renderBias(docSnap.data());
+            });
+        });
+
+        // AI Helper
+        async function callGemini(prompt, systemInstruction) {
+            // SIMULATION MODE: If no API Key is present, return realistic mock responses
+            if (!apiKey || apiKey === "") {
+                // ... existing simulation code ...
+                // Simulate network delay (thinking time)
+                await new Promise(r => setTimeout(r, 1200));
+                
+                const p = prompt.toLowerCase();
+                
+                // Mock Responses based on keywords
+                if (p.includes('hello') || p.includes('hi') || p.includes('hey')) {
+                    return "Greetings, Operator. I am Stellar AI. Systems are nominal. Ready to analyze market structure and order flow.";
+                }
+                if (p.includes('gold') || p.includes('xau')) {
+                    return "XAUUSD Analysis: Price is currently testing a key H4 supply zone. I am detecting a potential liquidity sweep of the Asian Highs. Watch for a rejection candle before looking for shorts.";
+                }
+                if (p.includes('eur') || p.includes('usd')) {
+                    return "EURUSD is consolidating. Institutional order flow remains bullish above 1.0850. Wait for a displacement above the current range for a valid entry.";
+                }
+                if (p.includes('btc') || p.includes('crypto') || p.includes('bitcoin')) {
+                    return "Bitcoin is showing divergence on the 1H timeframe. Large buy orders detected at the 64k support level. We may see a retest of the weekly open.";
+                }
+                if (p.includes('risk') || p.includes('money')) {
+                    return "Risk Protocol: Never risk more than 1-2% of your equity per trade. A fixed fractional sizing model is recommended to preserve capital during drawdown periods.";
+                }
+                if (p.includes('trend') || p.includes('bias')) {
+                    return "Daily Bias: Neutral-Bullish. Price has broken structure to the upside on the 4H chart, leaving a Fair Value Gap (FVG) below that may act as a magnet.";
+                }
+                if (p.includes('indicator') || p.includes('tool')) {
+                    return "Indicators lag price action. I recommend focusing on raw market structure (Highs/Lows) and Volume first. Our 'Market Session Ultimate' tool can help frame your charts correctly.";
+                }
+                
+                return "I am currently in Simulation Mode. I can discuss Market Structure, Gold, EURUSD, Crypto, or Risk Management. Try asking me about 'Gold trend' or 'Risk advice'.";
+            }
+
+            // FIXED: Updated to 'gemini-2.0-flash-exp' to resolve 404 Model Not Found errors
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemInstruction }] } };
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                
+                if (!response.ok) {
+                    console.error("Gemini API Error:", response.status);
+                    if (response.status === 401) return "Stellar AI Error: Unauthorized Access (Invalid Key).";
+                    if (response.status === 503) return "Stellar AI: Systems overloaded, please try again.";
+                    return `System Busy (Code ${response.status})`;
+                }
+
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Communication timeout.";
+            } catch (error) { 
+                console.error("Gemini Connection Error:", error);
+                return "Connection Error."; 
+            }
+        }
+
+        // --- GLOBAL EXPORTS ---
+        window.askStellarAI = async () => {
+            const input = document.getElementById('ai-input');
+            const history = document.getElementById('ai-chat-history');
+            const question = input.value.trim();
+            if (!question) return;
+            
+            const userBubble = document.createElement('div');
+            userBubble.className = "self-end bg-indigo-600 border border-indigo-500/50 rounded-2xl rounded-tr-none p-3 text-white text-xs leading-relaxed max-w-[85%] shadow-lg bubble flex-shrink-0";
+            userBubble.innerText = question;
+            history.appendChild(userBubble);
+            
+            input.value = '';
+            history.scrollTop = history.scrollHeight;
+
+            const typingMsg = document.createElement('div');
+            typingMsg.className = "flex gap-3 max-w-[85%] self-start flex-shrink-0";
+            typingMsg.innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i></div><div class="bg-gray-800 rounded-lg rounded-tl-none p-3 text-gray-400 text-xs flex gap-1 items-center"><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span><span class="w-1 h-1 bg-gray-500 rounded-full typing-dot"></span></div>`;
+            history.appendChild(typingMsg);
+            history.scrollTop = history.scrollHeight;
+            lucide.createIcons();
+
+            const systemPrompt = "You are Stellar AI, a senior trading expert at StellarStrategies. Provide professional, technical, and educational answers on market structure and automation. Keep it under 3 concise sentences.";
+            const answer = await callGemini(question, systemPrompt);
+            
+            history.removeChild(typingMsg);
+            const aiBubble = document.createElement('div');
+            aiBubble.className = "flex gap-3 max-w-[85%] self-start flex-shrink-0";
+            aiBubble.innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0 border border-indigo-500/20"><i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i></div><div class="bg-gray-800 border border-gray-700/50 rounded-2xl rounded-tl-none p-3 text-gray-300 text-xs leading-relaxed shadow-md bubble">${answer}</div>`;
+            history.appendChild(aiBubble);
+            history.scrollTop = history.scrollHeight;
+            lucide.createIcons();
+        };
+
+        window.renderTools = () => {
+            const grid = document.getElementById('tools-grid');
+            const filter = document.querySelector('.active-filter')?.dataset.filter || 'all';
+            const term = document.getElementById('search-input')?.value.toLowerCase() || '';
+            if(!grid) return; grid.innerHTML = '';
+            globalTools.forEach(tool => {
+                if ((filter === 'all' || tool.category === filter) && tool.title.toLowerCase().includes(term)) {
+                    const card = document.createElement('div');
+                    // Added 'product-card' class for specific hover targeting
+                    card.className = "glass-card product-card rounded-xl overflow-hidden group hover:border-indigo-500 transition-all duration-300 relative";
+                    let badge = tool.badge ? `<span class="absolute top-3 right-3 px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-600 text-white z-10 shadow-md">${tool.badge}</span>` : '';
+                    card.innerHTML = `<div class="h-44 bg-gray-900 relative overflow-hidden">${badge}${tool.imageUrl ? `<img src="${tool.imageUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">` : `<div class="flex items-center justify-center h-full text-indigo-500 opacity-20 group-hover:scale-110 transition-transform"><i data-lucide="${tool.icon || 'box'}" class="w-16 h-16"></i></div>`}</div><div class="p-5 flex flex-col h-32"><h3 class="font-bold text-white truncate text-sm uppercase tracking-tighter group-hover:text-indigo-400 transition-colors">${tool.title}</h3><p class="text-[10px] text-gray-500 line-clamp-2 mt-1 flex-grow">${tool.description}</p><a href="${tool.link}" target="_blank" class="block w-full text-center py-2.5 rounded bg-indigo-900/40 hover:bg-indigo-600 text-[10px] font-bold text-white transition-colors uppercase tracking-widest mt-2 border border-indigo-500/30 hover:border-indigo-500">View Product</a></div>`;
+                    grid.appendChild(card);
+                }
+            });
+            lucide.createIcons();
+        };
+
+        window.filterTools = (category) => {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter) { // Only affect actual filter buttons
+                    btn.className = btn.dataset.filter === category 
+                        ? "px-6 py-2 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-lg active-filter filter-btn" 
+                        : "px-6 py-2 rounded-full text-[10px] font-bold text-gray-400 filter-btn";
+                }
+            });
+            window.renderTools();
+        };
+
+        // --- INFO / LEGAL MODAL LOGIC ---
+        const infoContent = {
+            'risk': `
+                <h4 class="text-white font-bold text-lg mb-4">Risk Disclosure Statement</h4>
+                <p class="mb-4">Trading Foreign Exchange (Forex) and Contracts for Differences (CFD) on margin carries a high level of risk and may not be suitable for all investors. The high degree of leverage can work against you as well as for you. Before deciding to trade foreign exchange, you should carefully consider your investment objectives, level of experience, and risk appetite.</p>
+                <p class="mb-4 text-red-400 border-l-2 border-red-500 pl-4">The possibility exists that you could sustain a loss of some or all of your initial investment and therefore you should not invest money that you cannot afford to lose.</p>
+                <p>Stardust Syndicate OÜ provides software tools for informational and educational purposes only. Our tools do not constitute financial advice. We are not a licensed financial advisor. You should seek advice from an independent financial advisor if you have any doubts.</p>
+            `,
+            'privacy': `
+                <h4 class="text-white font-bold text-lg mb-4">Privacy Policy</h4>
+                <p class="mb-4"><strong>Effective Date:</strong> January 1, 2026</p>
+                <p class="mb-4">Stardust Syndicate OÜ ("we", "us") is committed to protecting your privacy. This policy details how we collect, use, and safeguard your data in compliance with the General Data Protection Regulation (GDPR).</p>
+                <ul class="list-disc pl-5 mb-4 space-y-2">
+                    <li><strong>Data Collection:</strong> We collect email addresses and basic usage data to provide support and license verification.</li>
+                    <li><strong>Payments (Store):</strong> Purchases made via the cTrader Store are processed entirely by cTrader. We do not access or store your payment card details for these transactions.</li>
+                    <li><strong>Payments (Custom Work):</strong> For bespoke development projects contracted directly with Stardust Syndicate OÜ, invoicing data is stored securely in compliance with Estonian accounting laws.</li>
+                </ul>
+                <p>You have the right to request access to, correction of, or deletion of your personal data at any time by contacting info@stellarstrategies.ee.</p>
+            `,
+            'terms': `
+                <h4 class="text-white font-bold text-lg mb-4">Terms of Service</h4>
+                <p class="mb-4">By downloading or using tools from Stardust Syndicate OÜ via the cTrader Store, you agree to the following terms:</p>
+                <ol class="list-decimal pl-5 mb-4 space-y-2">
+                    <li><strong>License:</strong> You are granted a non-exclusive, non-transferable license to use the software on your personal trading accounts, subject to the cTrader Store's licensing agreement.</li>
+                    <li><strong>Distribution:</strong> Reselling, sharing, or decompiling our code is strictly prohibited.</li>
+                    <li><strong>Liability:</strong> Stardust Syndicate OÜ is not liable for any trading losses incurred while using our software. Algorithmic trading involves inherent risks including software bugs, internet failure, and broker execution issues.</li>
+                </ol>
+            `,
+            'refund': `
+                <h4 class="text-white font-bold text-lg mb-4">Refund Policy</h4>
+                <div class="space-y-6">
+                    <div>
+                        <h5 class="font-bold text-white mb-2">1. cTrader Store Products</h5>
+                        <p class="mb-2"><strong>All purchases of ready-made indicators and cBots are processed via the official cTrader Store.</strong></p>
+                        <p>Stardust Syndicate OÜ does not handle payments or issue refunds for these store transactions directly. All licensing, billing, and refund disputes for store products are governed strictly by the <a href="https://ctrader.com" target="_blank" class="text-indigo-400 underline">cTrader Store Terms of Service</a>.</p>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-700">
+                        <h5 class="font-bold text-white mb-2">2. Custom Development Services</h5>
+                        <p class="mb-2"><strong>Custom projects are contracted directly with Stardust Syndicate OÜ.</strong></p>
+                        <p>Refunds and payment terms for bespoke work are governed by the specific Service Agreement signed at the start of the project. Generally, initial deposits or retainers for custom development are non-refundable once engineering work has commenced.</p>
+                    </div>
+                </div>
+            `,
+            'contact': `
+                <h4 class="text-white font-bold text-lg mb-4">Contact Support</h4>
+                <p class="mb-4">Our support team is based in Tallinn, Estonia (GMT+2) and is available Mon-Fri, 09:00 - 17:00.</p>
+                <div class="bg-gray-800 p-4 rounded-lg mb-4 border border-gray-700">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="mail" class="text-indigo-400"></i>
+                        <span class="text-white font-mono">info@stellarstrategies.ee</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="message-square" class="text-indigo-400"></i>
+                        <span class="text-gray-400">Response time: usually within 24 hours.</span>
+                    </div>
+                </div>
+                <p>Please include your <strong>Order ID</strong> and <strong>cTrader ID</strong> in all support requests to help us serve you faster.</p>
+            `,
+            'docs': `
+                <h4 class="text-white font-bold text-lg mb-4">Documentation</h4>
+                <p class="mb-4">Comprehensive guides for all Stellar Strategies tools are available in our Knowledge Base.</p>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <a href="#" class="p-4 bg-gray-800 rounded border border-gray-700 hover:border-indigo-500 transition-colors">
+                        <div class="font-bold text-white mb-1">Installation Guide</div>
+                        <div class="text-xs">How to install cBots/Indicators</div>
+                    </a>
+                    <a href="#" class="p-4 bg-gray-800 rounded border border-gray-700 hover:border-indigo-500 transition-colors">
+                        <div class="font-bold text-white mb-1">Parameter Wiki</div>
+                        <div class="text-xs">Detailed settings explanation</div>
+                    </a>
+                </div>
+                <p><em>Note: PDF manuals are also included inside every product download zip file.</em></p>
+            `,
+            'custom': `
+                <h4 class="text-white font-bold text-lg mb-4">Custom Development</h4>
+                <p class="mb-4">Need a bespoke trading algorithm? Our team of cTrader consultants can build your strategy.</p>
+                <p class="mb-4 text-xs text-gray-500 border-l-2 border-indigo-500 pl-3"><em>Note: Custom development projects are contracted and billed directly by Stardust Syndicate OÜ, separate from the cTrader Store.</em></p>
+                <p class="mb-2"><strong>Our Stack:</strong></p>
+                <div class="flex gap-2 mb-4">
+                    <span class="px-2 py-1 bg-indigo-900/30 text-indigo-400 text-xs rounded border border-indigo-500/30">C# / .NET</span>
+                    <span class="px-2 py-1 bg-indigo-900/30 text-indigo-400 text-xs rounded border border-indigo-500/30">Python</span>
+                    <span class="px-2 py-1 bg-indigo-900/30 text-indigo-400 text-xs rounded border border-indigo-500/30">FIX Protocol</span>
+                </div>
+                <p>Minimum project engagement starts at <strong>€2,500</strong>. Contact us with your specification for a quote.</p>
+            `
+        };
+
+        window.openInfoModal = (type) => {
+            const content = infoContent[type];
+            if (content) {
+                document.getElementById('info-modal-content').innerHTML = content;
+                document.getElementById('info-modal').classList.remove('hidden');
+                lucide.createIcons();
+            }
+        };
+        window.closeInfoModal = () => document.getElementById('info-modal').classList.add('hidden');
+
+        // --- WIZARD LOGIC ---
+        let wizardData = { style: '', asset: '' };
+        window.openWizard = () => { 
+            document.getElementById('strategy-wizard-modal').classList.remove('hidden'); 
+            window.resetWizard();
+        };
+        window.closeWizard = () => document.getElementById('strategy-wizard-modal').classList.add('hidden');
+        window.resetWizard = () => {
+            wizardData = { style: '', asset: '' };
+            document.getElementById('wizard-step-1').classList.remove('hidden');
+            document.getElementById('wizard-step-2').classList.add('hidden');
+            document.getElementById('wizard-result').classList.add('hidden');
+        };
+        window.selectWizardOption = (step, value) => {
+            wizardData[step] = value;
+            if (step === 'style') {
+                document.getElementById('wizard-step-1').classList.add('hidden');
+                document.getElementById('wizard-step-2').classList.remove('hidden');
+            } else if (step === 'asset') {
+                document.getElementById('wizard-step-2').classList.add('hidden');
+                document.getElementById('wizard-result').classList.remove('hidden');
+                window.calculateRecommendation();
+            }
+        };
+        window.calculateRecommendation = () => {
+            let recTitle = "Market Session Ultimate"; // Default
+            
+            // Logic Matrix
+            if (wizardData.style === 'scalper') {
+                recTitle = "MARSI Signal Plotter";
+                if (wizardData.asset === 'crypto') recTitle = "Visual Trend Momentum";
+            } else if (wizardData.style === 'day') {
+                recTitle = "Market Session Ultimate";
+                if (wizardData.asset === 'forex') recTitle = "Market Structure Breakout";
+            } else if (wizardData.style === 'swing') {
+                recTitle = "Smart ADX";
+                if (wizardData.asset === 'crypto') recTitle = "BOS Trend 1.0";
+            }
+
+            // Find Tool Object
+            const tool = globalTools.find(t => t.title.includes(recTitle)) || globalTools[0];
+            
+            // Render Result
+            const container = document.getElementById('wizard-recommendation');
+            const linkBtn = document.getElementById('wizard-link');
+            
+            if (tool) {
+                container.innerHTML = `
+                    <div class="flex gap-4 items-center">
+                        <div class="w-16 h-16 rounded bg-gray-900 flex-shrink-0 overflow-hidden border border-gray-700">
+                             ${tool.imageUrl ? `<img src="${tool.imageUrl}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-indigo-500"><i data-lucide="${tool.icon||'box'}"></i></div>`}
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-1">Top Match</div>
+                            <h5 class="text-white font-bold text-lg leading-none mb-1">${tool.title}</h5>
+                            <p class="text-xs text-gray-500 line-clamp-1">${tool.description}</p>
+                        </div>
+                    </div>
+                `;
+                linkBtn.href = tool.link;
+            } else {
+                 container.innerHTML = `<p class="text-white">Loading recommendations...</p>`;
+            }
+            lucide.createIcons();
+        };
+
+        window.searchTools = () => window.renderTools();
+
+        window.loadTradingViewSignal = (symbol) => {
+            const container = document.getElementById('tv-technical-widget');
+            if (!container) return; container.innerHTML = '';
+            const script = document.createElement('script'); script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({ "interval": "15m", "width": "100%", "isTransparent": true, "height": "425", "symbol": symbol, "showIntervalTabs": true, "displayMode": "single", "locale": "en", "colorTheme": "dark" });
+            container.appendChild(script);
+        };
+
+        window.renderSignals = () => {
+            const container = document.getElementById('signals-list');
+            if(!container) return;
+            if(!document.querySelector('#tv-technical-widget script')) window.loadTradingViewSignal('FX:XAUUSD');
+            if(globalSignals.length === 0) { container.innerHTML = '<div class="text-center text-gray-600 py-6 text-[10px] font-medium">Awaiting live signals...</div>'; return; }
+            container.innerHTML = '';
+            globalSignals.forEach(sig => {
+                const isBuy = sig.type === 'BUY';
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border border-gray-700 bg-gray-800/30 border-l-4 ${isBuy ? 'border-l-green-500' : 'border-l-red-500'}`;
+                div.innerHTML = `<div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-white tracking-tighter">${sig.pair}</span><span class="text-[9px] font-bold px-2 py-0.5 rounded ${isBuy ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">${sig.type}</span></div><div class="grid grid-cols-3 gap-1 text-[10px]"><div><span class="text-gray-500 uppercase text-[8px]">ENTRY</span><br><span class="text-white font-mono">${sig.entry}</span></div><div><span class="text-gray-500 uppercase text-[8px]">TP</span><br><span class="text-green-400 font-mono">${sig.tp}</span></div><div><span class="text-gray-500 uppercase text-[8px]">SL</span><br><span class="text-red-400 font-mono">${sig.sl}</span></div></div>`;
+                container.appendChild(div);
+            });
+        };
+
+        window.renderBias = (d) => { const c = document.getElementById('daily-bias-content'); if(c) c.innerHTML = `<p class="text-gray-300 italic">${d.text || "Loading..."}</p>`; }
+
+        window.renderAcademy = () => {
+            const grid = document.getElementById('academy-grid');
+            if(!grid) return; grid.innerHTML = '';
+            globalAcademy.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-card p-4 rounded-xl flex items-center justify-between group cursor-pointer hover:bg-gray-800/50 transition-colors border border-gray-700/50";
+                
+                // FIXED: Changed from .onclick property to setAttribute for consistent global scope access
+                card.setAttribute('onclick', `window.openAcademy('${item.id}')`);
+                
+                card.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-12 rounded-lg bg-indigo-900/30 flex items-center justify-center text-indigo-400"><i data-lucide="${item.icon || 'book-open'}" class="w-6 h-6"></i></div><div><h4 class="text-md font-bold text-white group-hover:text-indigo-400 transition-colors">${item.title}</h4><p class="text-xs text-gray-500 line-clamp-1">${item.desc}</p></div></div><i data-lucide="chevron-right" class="w-5 h-5 text-gray-600 group-hover:text-white transition-colors"></i>`;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        };
+
+        window.renderAdminAcademyList = () => {
+             const list = document.getElementById('admin-academy-list');
+             if(!list) return; list.innerHTML = '';
+             globalAcademy.forEach(l => {
+                 const d = document.createElement('div');
+                 d.className = "flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-700";
+                 d.innerHTML = `<span class="text-xs text-white truncate w-40">${l.title}</span><div class="flex gap-2"><button onclick="editLesson('${l.id}')" class="text-blue-400"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button onclick="deleteLesson('${l.id}')" class="text-red-400"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`;
+                 list.appendChild(d);
+             });
+             lucide.createIcons();
+        };
+
+        window.openAcademy = (id) => {
+            const lesson = globalAcademy.find(l => l.id === id);
+            if(lesson) {
+                document.getElementById('modal-title').innerText = lesson.title;
+                document.getElementById('modal-content').innerHTML = lesson.content;
+                // FIXED: Use direct class manipulation instead of calling the external toggle function
+                document.getElementById('academy-modal').classList.remove('hidden');
+            }
+        };
+        
+        // --- ADMIN AUTH LOGIC ---
+        window.attemptAdminLogin = () => {
+            const id = document.getElementById('admin-id').value;
+            const key = document.getElementById('admin-key').value;
+            const err = document.getElementById('login-error');
+            
+            // DEMO CREDENTIALS CHECK
+            if (id === 'admin' && key === 'stellar') {
+                err.classList.add('hidden');
+                document.getElementById('admin-login-screen').classList.add('hidden');
+                document.getElementById('admin-dashboard-content').classList.remove('hidden');
+                
+                // Clear fields for security
+                document.getElementById('admin-id').value = '';
+                document.getElementById('admin-key').value = '';
+            } else {
+                err.classList.remove('hidden');
+            }
+        };
+
+        window.adminLogout = () => {
+            document.getElementById('admin-dashboard-content').classList.add('hidden');
+            document.getElementById('admin-login-screen').classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+        };
+
+        // --- ADMIN FUNCTIONS ---
+        window.saveTool = async () => { if (!currentUser) return; const title = document.getElementById('tool-title').value; const desc = document.getElementById('tool-desc').value; const category = document.getElementById('tool-category').value; const color = document.getElementById('tool-color').value; const icon = document.getElementById('tool-icon').value || 'box'; const imageUrl = document.getElementById('tool-image').value || ''; const badge = document.getElementById('tool-badge').value; const link = document.getElementById('tool-link').value || '#'; const editId = document.getElementById('edit-doc-id').value; if (!title) return alert("Title required"); const data = { title, description: desc, category, color, icon, imageUrl, badge, link }; const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools'); try { if (editId) await updateDoc(doc(colRef, editId), data); else await addDoc(colRef, data); window.resetForm(); } catch (e) { console.error(e); } };
+        window.deleteTool = async (id) => { if(!confirm("Delete?")) return; await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tools', id)); };
+        window.editTool = (id) => { const t = globalTools.find(i => i.id === id); if(!t) return; document.getElementById('edit-doc-id').value = t.id; document.getElementById('tool-title').value = t.title; document.getElementById('tool-desc').value = t.description; document.getElementById('tool-image').value = t.imageUrl || ''; document.getElementById('tool-link').value = t.link; document.getElementById('tool-icon').value = t.icon || ''; document.getElementById('tool-badge').value = t.badge || ''; document.getElementById('form-title').innerText = "Edit"; window.switchAdminTab('tools'); };
+        window.resetForm = () => { document.getElementById('edit-doc-id').value = ''; document.getElementById('tool-title').value = ''; document.getElementById('tool-desc').value = ''; document.getElementById('form-title').innerText = "Add Tool"; };
+        
+        window.saveLesson = async () => {
+            const title = document.getElementById('acad-title').value;
+            const desc = document.getElementById('acad-desc').value;
+            const icon = document.getElementById('acad-icon').value;
+            const content = document.getElementById('acad-content').value;
+            const editId = document.getElementById('edit-acad-id').value;
+            if(!title) return alert("Title required");
+            const data = { title, desc, icon, content };
+            if(editId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'academy', editId), data);
+            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'academy'), data);
+            window.resetAcadForm();
+        };
+        window.deleteLesson = async (id) => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'academy', id));
+        window.editLesson = (id) => { const l = globalAcademy.find(x => x.id === id); if(!l) return; document.getElementById('edit-acad-id').value = l.id; document.getElementById('acad-title').value = l.title; document.getElementById('acad-desc').value = l.desc; document.getElementById('acad-icon').value = l.icon; document.getElementById('acad-content').value = l.content; document.getElementById('acad-form-title').innerText = "Edit Lesson"; };
+        window.resetAcadForm = () => { document.getElementById('edit-acad-id').value = ''; document.getElementById('acad-title').value = ''; document.getElementById('acad-desc').value = ''; document.getElementById('acad-icon').value = ''; document.getElementById('acad-content').value = ''; document.getElementById('acad-form-title').innerText = "Add Lesson"; };
+        
+        window.postSignal = async () => { const pair = document.getElementById('sig-pair').value; const type = document.getElementById('sig-type').value; const entry = document.getElementById('sig-entry').value; const sl = document.getElementById('sig-sl').value; const tp = document.getElementById('sig-tp').value; if(!pair || !entry) return alert("Pair/Entry required"); await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'signals'), { pair: pair.toUpperCase(), type, entry, sl, tp, status: 'Active', timestamp: Date.now() }); document.getElementById('sig-pair').value = ''; };
+        window.updateSignalStatus = async (id, s) => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'signals', id), { status: s });
+        window.deleteSignal = async (id) => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'signals', id));
+        
+        window.renderAdminList = () => {
+             const list = document.getElementById('admin-tool-list');
+             if(!list) return; list.innerHTML = '';
+             globalTools.forEach(t => {
+                 const d = document.createElement('div');
+                 d.className = "flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-700";
+                 d.innerHTML = `<span class="text-xs text-white truncate w-32">${t.title}</span><div class="flex gap-1"><button onclick="editTool('${t.id}')" class="text-blue-400"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button onclick="deleteTool('${t.id}')" class="text-red-400"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`;
+                 list.appendChild(d);
+             });
+             lucide.createIcons();
+        };
+
+        window.renderAdminSignalList = () => {
+            const list = document.getElementById('admin-signal-list');
+            if(!list) return; list.innerHTML = '';
+            globalSignals.forEach(sig => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-700 mb-2";
+                item.innerHTML = `<div class="flex flex-col"><span class="text-xs font-bold text-white">${sig.pair} ${sig.type}</span><span class="text-[10px] text-gray-400">${sig.status}</span></div><div class="flex gap-2"><button onclick="updateSignalStatus('${sig.id}', 'Won')" class="text-green-500">🏆</button><button onclick="updateSignalStatus('${sig.id}', 'Lost')" class="text-red-500">❌</button><button onclick="deleteSignal('${sig.id}')" class="text-gray-500"><i data-lucide="trash" class="w-3 h-3"></i></button></div>`;
+                list.appendChild(item);
+            });
+            lucide.createIcons();
+        };
+        
+        window.saveBias = async () => { if(!currentUser) return; const text = document.getElementById('bias-text').value; try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_bias', 'current'), { text, updatedAt: new Date() }); } catch(e) { console.error(e); } }
+
+        // --- RISK CALCULATOR LOGIC (Restored) ---
+        window.calculateRisk = (e) => {
+            e.preventDefault();
+            const balance = parseFloat(document.getElementById('balance').value);
+            const risk = parseFloat(document.getElementById('risk').value);
+            const pips = parseFloat(document.getElementById('pips').value);
+            
+            if (isNaN(balance) || isNaN(risk) || isNaN(pips) || pips === 0) return;
+            
+            // Calculation: Risk Amount / (Stop Loss * Pip Value)
+            // Assuming Standard Lot ($10/pip) for major pairs
+            const riskAmount = balance * (risk / 100);
+            const lots = riskAmount / (pips * 10);
+            
+            document.getElementById('lot-result').innerText = lots.toFixed(2);
+            document.getElementById('result-box').classList.remove('hidden');
+        };
+
+        async function seedDatabase() {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tools');
+            const tools = [
+                { 
+                    title: "Market Session Ultimate", 
+                    description: "Visualize trading sessions, opening ranges, and key price levels.", 
+                    category: "indicator", 
+                    badge: "Premium", 
+                    link: "https://ctrader.com/products/894",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/c6ab1a32-7da1-4d09-813c-75d33b8800b2_Market Session Ultimate 2.png"
+                },
+                { 
+                    title: "Market Structure Breakout", 
+                    description: "Identify trend breaks based on lookback high/low ranges.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/950",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/99d762b3-fbbe-489d-9c19-e72c41ffe387_cT_cs_4141285_EURUSD_2025-04-21_20-25-12.png"
+                },
+                { 
+                    title: "BOS Trend 1.0", 
+                    description: "Premium multi-timeframe Break of Structure analysis.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/220",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/808c7722-ba53-4633-b8a4-16f31eeb1fc2_[Stellar Strategies] BOS Trend.jpg"
+                },
+                { 
+                    title: "MARSI Signal Plotter", 
+                    description: "Actionable signals on Range Bars using MA and RSI.", 
+                    category: "indicator", 
+                    badge: "$15", 
+                    link: "https://ctrader.com/products/189",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/a423f7d2-eb34-49ee-bb17-13e5586550fb_MARSI 2.0.png"
+                },
+                { 
+                    title: "Smart ADX", 
+                    description: "Trend mastery with MTF scanner and exit targets.", 
+                    category: "indicator", 
+                    badge: "$39", 
+                    link: "https://ctrader.com/products/2850",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/9503ee65-5386-408e-b63c-9faacd672e08_Stellar ADX.png"
+                },
+                { 
+                    title: "VBO Volume Oscillator", 
+                    description: "Next-gen volume analysis with Hyperbolic Tangent math.", 
+                    category: "indicator", 
+                    badge: "$19", 
+                    link: "https://ctrader.com/products/2852",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/7dc1f1b1-2236-4d85-abb3-1c50a32aac9a_vbo.png"
+                },
+                { 
+                    title: "QQE Indicator", 
+                    description: "Classic QQE for trend changes.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/758",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/ed4b3af5-54e4-404e-80eb-a23fa7ef0282_cTrader_7oDDAbSmSP.png"
+                },
+                { 
+                    title: "Linear Regression Candles", 
+                    description: "Visual candle data via regression slopes.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/805",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/19ef277f-e0b6-48ef-8941-88bfbba145f3_cT_cs_4141285_EURUSD_2025-03-30_19-53-31.png"
+                },
+                { 
+                    title: "Inside Bar with Signals", 
+                    description: "Professional Inside Bar breakout detection.", 
+                    category: "indicator", 
+                    badge: "$15", 
+                    link: "https://ctrader.com/products/1464",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/c12d088e-7b52-4961-a0d2-7e38a2499bd3_cT_cs_4141285_EURUSD_2025-07-15_13-15-32.png"
+                },
+                { 
+                    title: "Visual Trend Momentum", 
+                    description: "Trend strength with ATR filtering.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/716",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/3835d044-1c21-4909-9d3c-2635f984b93d_visualtrendmomentum.jpg"
+                },
+                { 
+                    title: "Wave Trend Pro", 
+                    description: "Momentum oscillator with OB/OS signals.", 
+                    category: "indicator", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/981",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/8c93438a-6b0a-4026-93b2-0694329a3bc1_cT_cs_4141285_EURUSD_2025-04-25_17-52-31.png"
+                },
+                { 
+                    title: "Candlestick Patterns Dashboard", 
+                    description: "Detects 30+ patterns with win rate stats.", 
+                    category: "indicator", 
+                    badge: "$35", 
+                    link: "https://ctrader.com/products/3113",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/ecbe4451-9dae-4dee-8bee-271c1e4e4ab1_CPD.png"
+                },
+                { 
+                    title: "Scheduled Trade Executor", 
+                    description: "Automated entry cBot for news/timed setups.", 
+                    category: "cbot", 
+                    badge: "Free", 
+                    link: "https://ctrader.com/products/208",
+                    imageUrl: "https://market-prod-23f4d22-e289.s3.amazonaws.com/f13e96a0-274f-490e-8aa5-5a154d8bcf60_stellar12.jpg"
+                }
+            ];
+            for(const t of tools) await addDoc(colRef, t);
+        }
+
+        async function seedAcademy() {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'academy');
+            const lessons = [
+                { 
+                    title: "Forex Basics 101", 
+                    desc: "Pip, Lots, and Leverage explained.", 
+                    icon: "book-open", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>A Beginner's Guide to Trading</h1>
+                            <p>Welcome to the exciting world of Forex trading! If you're new here, it can all seem a bit complex. But don't worry, the goal of this guide is to break down the fundamentals into simple, understandable concepts.</p>
+                            
+                            <h2>1. What is the Forex Market?</h2>
+                            <p>The Foreign Exchange (or Forex) market is the largest and most liquid financial market in the world. Think of it as a global marketplace where currencies are traded.</p>
+                            <ul>
+                                <li><strong>It's Global:</strong> A decentralized network with no central physical location.</li>
+                                <li><strong>It's 24/5:</strong> Opens in Sydney on Monday morning and closes in New York on Friday evening.</li>
+                                <li><strong>It's Huge:</strong> Trillions of dollars are traded every single day.</li>
+                            </ul>
+
+                            <h2>2. Essential Terminology</h2>
+                            <ul>
+                                <li><strong>Currency Pair:</strong> Currencies are traded in pairs (e.g., EUR/USD).</li>
+                                <li><strong>Pip:</strong> The smallest unit of price movement (usually the 4th decimal place).</li>
+                                <li><strong>Spread:</strong> The difference between the buy (ask) and sell (bid) price.</li>
+                                <li><strong>Leverage:</strong> Controlling a large position with a small amount of capital (e.g., 100:1).</li>
+                                <li><strong>Long vs. Short:</strong> Long means buying (expecting rise), Short means selling (expecting fall).</li>
+                            </ul>
+
+                            <h2>3. How Do You Make Money?</h2>
+                            <p>The goal is simple: Buy low and sell high, or sell high and buy low.</p>
+                            <div class="highlight">
+                                <strong>Example:</strong> You believe the Euro will strengthen against the Dollar. You buy EUR/USD at 1.0800. It rises to 1.0850. You close the trade for a 50-pip profit.
+                            </div>
+
+                            <h2>4. Getting Started</h2>
+                            <p>You need a reliable broker, a trading platform (like cTrader), a strategy, and strict risk management. We recommend starting with a demo account to practice risk-free.</p>
+                        </div>` 
+                },
+                { 
+                    title: "Strategy Library", 
+                    desc: "Foundational strategies for beginners.", 
+                    icon: "activity", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Strategy Library</h1>
+                            <p>A trading strategy is a set of rules that helps you identify when to buy, sell, or stay out of the market.</p>
+
+                            <h2>1. Trend Following</h2>
+                            <p>Based on the idea that markets moving in a direction will likely continue. Uses Moving Averages (MAs).</p>
+                            <ul>
+                                <li><strong>Buy Signal:</strong> Fast MA (e.g., 20) crosses above Slow MA (e.g., 50).</li>
+                                <li><strong>Sell Signal:</strong> Fast MA crosses below Slow MA.</li>
+                            </ul>
+
+                            <h2>2. Support and Resistance</h2>
+                            <p>Trading based on key levels where price has historically reversed.</p>
+                            <ul>
+                                <li><strong>Support:</strong> Price level where buying interest is strong (floor).</li>
+                                <li><strong>Resistance:</strong> Price level where selling interest is strong (ceiling).</li>
+                                <li><strong>Strategy:</strong> Buy near support, sell near resistance.</li>
+                            </ul>
+
+                            <h2>3. Breakout Trading</h2>
+                            <p>Entering the market as price moves outside a defined range with volume.</p>
+                            <ul>
+                                <li>Wait for a candle to close decisively outside the range.</li>
+                                <li>Look for volume confirmation.</li>
+                            </ul>
+
+                            <h2>4. Range Trading with Oscillators</h2>
+                            <p>Effective in sideways markets. Uses RSI or Stochastic.</p>
+                            <ul>
+                                <li><strong>Buy:</strong> Price at support + Oscillator Oversold.</li>
+                                <li><strong>Sell:</strong> Price at resistance + Oscillator Overbought.</li>
+                            </ul>
+                        </div>` 
+                },
+                { 
+                    title: "Trading Psychology", 
+                    desc: "Mastering the trader's mind.", 
+                    icon: "brain", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Psychology</h1>
+                            <p>Strategies are useless without mental discipline. Trading is 90% mental.</p>
+
+                            <h2>Greed and Fear</h2>
+                            <p><strong>Greed:</strong> Holding winning trades too long or over-leveraging. Antidote: A rigid trading plan.</p>
+                            <p><strong>Fear:</strong> Exiting good trades too early or FOMO (Fear Of Missing Out). Antidote: Trust your analysis and accept that missing moves is part of the game.</p>
+
+                            <h2>Common Traps</h2>
+                            <ul>
+                                <li><strong>Revenge Trading:</strong> Jumping back in after a loss to "make it back".</li>
+                                <li><strong>Confirmation Bias:</strong> Only seeing news that supports your trade.</li>
+                                <li><strong>Gambler's Fallacy:</strong> Believing a trend <em>must</em> reverse just because it's gone on for a long time.</li>
+                            </ul>
+
+                            <h2>Developing a Pro Mindset</h2>
+                            <ol>
+                                <li>Treat trading as a business, not a hobby.</li>
+                                <li>Focus on the <em>process</em> (following rules), not the profits.</li>
+                                <li>Review your journal weekly to identify emotional triggers.</li>
+                            </ol>
+                        </div>` 
+                },
+                { 
+                    title: "Trading Glossary", 
+                    desc: "The essential language of financial markets.", 
+                    icon: "list", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Glossary</h1>
+                            <p>The essential language of the financial markets.</p>
+
+                            <h2>A</h2>
+                            <p><strong>Appreciation:</strong> An increase in the value of an asset or currency.</p>
+                            <p><strong>Arbitrage:</strong> The practice of simultaneously buying and selling an asset in different markets to profit from a small difference in its price.</p>
+                            <p><strong>Ask Price:</strong> The price a seller is willing to accept (Buy price).</p>
+
+                            <h2>B</h2>
+                            <p><strong>Balance:</strong> Total money in account excluding open positions.</p>
+                            <p><strong>Base Currency:</strong> The first currency in a pair (e.g., EUR in EUR/USD).</p>
+                            <p><strong>Bear Market:</strong> A market where prices are falling.</p>
+                            <p><strong>Bid Price:</strong> The price a buyer is willing to pay (Sell price).</p>
+                            <p><strong>Bull Market:</strong> A market where prices are rising.</p>
+
+                            <h2>C</h2>
+                            <p><strong>Candlestick Chart:</strong> A chart displaying High, Low, Open, Close prices.</p>
+                            <p><strong>Commission:</strong> Fee charged by a broker.</p>
+
+                            <h2>D</h2>
+                            <p><strong>Day Trading:</strong> Opening and closing trades within the same day.</p>
+                            <p><strong>Drawdown:</strong> The peak-to-trough decline in account equity.</p>
+                            
+                            <h2>E</h2>
+                            <p><strong>Equity:</strong> Real-time account value (Balance + Floating P/L).</p>
+                            <p><strong>ECN:</strong> Electronic Communication Network (direct market access).</p>
+
+                            <h2>H</h2>
+                            <p><strong>Hawkish:</strong> Central bank stance favoring higher interest rates.</p>
+                            <p><strong>Hedging:</strong> Opening opposite positions to reduce risk.</p>
+
+                            <h2>L</h2>
+                            <p><strong>Leverage:</strong> Controlling large positions with small capital.</p>
+                            <p><strong>Liquidity:</strong> How easily an asset can be bought/sold.</p>
+                            <p><strong>Long:</strong> Buying an asset.</p>
+
+                            <h2>M</h2>
+                            <p><strong>Margin:</strong> Money set aside to keep a position open.</p>
+                            <p><strong>Margin Call:</strong> Warning that equity is too low to support positions.</p>
+
+                            <h2>P</h2>
+                            <p><strong>Pip:</strong> Smallest unit of price movement (0.0001 for most pairs).</p>
+                            <p><strong>Position Sizing:</strong> Calculating lot size based on risk.</p>
+
+                            <h2>S</h2>
+                            <p><strong>Scalping:</strong> Very short-term trading for small profits.</p>
+                            <p><strong>Short:</strong> Selling an asset.</p>
+                            <p><strong>Spread:</strong> Difference between Bid and Ask.</p>
+                            <p><strong>Stop Loss:</strong> Order to limit loss on a trade.</p>
+                            
+                            <h2>V</h2>
+                            <p><strong>Volatility:</strong> Measure of how dramatically prices change.</p>
+                        </div>` 
+                },
+                { 
+                    title: "Economic Indicators", 
+                    desc: "Understanding NFP, CPI, and GDP.", 
+                    icon: "bar-chart", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Economic Indicators Explained</h1>
+                            <p>Fundamental analysis involves understanding the economic forces driving currency values.</p>
+
+                            <h2>Non-Farm Payrolls (NFP)</h2>
+                            <p><strong>Impact: High.</strong> Measures U.S. job growth. Strong NFP is bullish for USD (signals strong economy, potential rate hikes). Weak NFP is bearish.</p>
+
+                            <h2>Consumer Price Index (CPI)</h2>
+                            <p><strong>Impact: High.</strong> Measures inflation. High CPI often forces central banks to raise rates (Bullish for currency). Low CPI allows lower rates (Bearish).</p>
+
+                            <h2>Gross Domestic Product (GDP)</h2>
+                            <p><strong>Impact: High.</strong> The scorecard of economic health. Positive growth is bullish; negative growth (recession) is bearish.</p>
+
+                            <h2>Central Bank Rate Decisions</h2>
+                            <p><strong>Impact: Very High.</strong> Interest rates drive capital flows. Higher rates attract investment (Bullish). Lower rates repel it (Bearish). Watch for "Hawkish" (raising) or "Dovish" (lowering) tones.</p>
+
+                            <div class="highlight">
+                                <strong>Pro Tip:</strong> Professional traders look for confluence—when technicals and fundamentals point in the same direction.
+                            </div>
+                        </div>` 
+                },
+                { 
+                    title: "Trading Journal", 
+                    desc: "The most powerful tool for improvement.", 
+                    icon: "edit-3", 
+                    content: `
+                        <div class='article-content'>
+                            <h1>Trading Journal</h1>
+                            <p>A journal transforms trading from random gambling into a data-driven business.</p>
+
+                            <h2>Why Journal?</h2>
+                            <ul>
+                                <li><strong>Identify Patterns:</strong> See what works and what doesn't.</li>
+                                <li><strong>Improve Discipline:</strong> Accountability prevents impulsive trades.</li>
+                                <li><strong>Manage Emotions:</strong> Tracking feelings helps identify triggers.</li>
+                            </ul>
+
+                            <h2>What to Record</h2>
+                            <ul>
+                                <li><strong>Setup:</strong> Date, time, pair, position size.</li>
+                                <li><strong>Rationale:</strong> Why did you take the trade? (Tech/Fund reasons).</li>
+                                <li><strong>Screenshot:</strong> Capture the chart at the moment of entry.</li>
+                                <li><strong>Outcome:</strong> Profit/Loss in pips and currency.</li>
+                                <li><strong>Analysis:</strong> Did you follow your plan? How was your mental state?</li>
+                            </ul>
+                            
+                            <p>Consistent, honest record-keeping is the fastest path to profitability.</p>
+                        </div>` 
+                }
+            ];
+            for(const l of lessons) await addDoc(colRef, l);
+        }
+
+        window.renderTools(); window.renderSignals();
+    </script>
+    
+    <script>
+        function refreshStrength() { const container = document.getElementById('strength-container'); if(!container) return; container.innerHTML = ''; ['USD', 'EUR', 'GBP', 'JPY', 'AUD'].forEach(curr => { const s = Math.floor(Math.random() * 80) + 10; const row = document.createElement('div'); row.className = "flex items-center gap-3"; row.innerHTML = `<span class="text-xs font-bold text-gray-400 w-8">${curr}</span><div class="flex-grow h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 strength-bar-fill" style="width: ${s}%"></div></div><span class="text-xs text-gray-500 w-6">${s}</span>`; container.appendChild(row); }); } setTimeout(refreshStrength, 500);
+        function switchTab(tabId) { ['calc', 'ai', 'signals'].forEach(t => { const content = document.getElementById('content-' + t); const tab = document.getElementById('tab-' + t); if (content) content.classList.add('hidden'); if (tab) tab.className = "flex-1 py-4 text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors uppercase tracking-widest"; }); document.getElementById('content-' + tabId).classList.remove('hidden'); document.getElementById('tab-' + tabId).className = "flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all"; if (tabId === 'ai') { const h = document.getElementById('ai-chat-history'); if(h) setTimeout(() => h.scrollTop = h.scrollHeight, 50); } }
+        
+        function switchMarketTab(tabId) {
+            ['calendar', 'news'].forEach(t => {
+                const content = document.getElementById('market-' + t);
+                const tab = document.getElementById('mtab-' + t);
+                if (content) content.classList.add('hidden');
+                if (tab) tab.className = "flex-1 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest transition-all";
+            });
+            const activeContent = document.getElementById('market-' + tabId);
+            const activeTab = document.getElementById('mtab-' + tabId);
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (activeTab) activeTab.className = "flex-1 py-4 text-[10px] font-bold text-white border-b-2 border-indigo-500 bg-gray-800/30 uppercase tracking-widest transition-all";
+        }
+
+        window.toggleMobileMenu = () => document.getElementById('mobile-menu').classList.toggle('hidden');
+        window.toggleAdminModal = () => document.getElementById('admin-modal').classList.toggle('hidden');
+        window.toggleAcademyModal = () => document.getElementById('academy-modal').classList.toggle('hidden');
+        window.switchAdminTab = (id) => { ['tools', 'signals', 'bias', 'academy'].forEach(t => { document.getElementById('adm-content-' + t).classList.add('hidden'); document.getElementById('adm-tab-' + t).className = "flex-1 py-2 text-gray-500"; }); document.getElementById('adm-content-' + id).classList.remove('hidden'); document.getElementById('adm-tab-' + id).className = "flex-1 py-2 text-white border-b-2 border-indigo-500"; }
+        window.changeSlide = () => {}; 
+
+        setInterval(() => {
+            const clock = document.getElementById('live-clock'); if(clock) clock.innerText = new Date().toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false }) + " UTC";
+            const container = document.getElementById('session-container'); if(container && container.innerHTML === '') {
+                const now = new Date(); const utcTime = now.getUTCHours() + (now.getUTCMinutes() / 60); [{name:'Tokyo', s:0, e:9}, {name:'London', s:7, e:16}, {name:'New York', s:12, e:21}].forEach(s => { let isOpen = (utcTime >= s.s && utcTime < s.e); const div = document.createElement('div'); div.className = "mb-4"; div.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-gray-400">${s.name}</span><span class="text-[10px] px-1.5 rounded ${isOpen ? 'bg-green-500/20 text-green-400' : 'bg-gray-800 text-gray-600'}">${isOpen ? 'OPEN' : 'CLOSED'}</span></div><div class="h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${isOpen ? '100%' : '0%'}"></div></div>`; container.appendChild(div); });
+            }
+        }, 1000);
+        lucide.createIcons();
+    </script>
+</body>
+</html>
